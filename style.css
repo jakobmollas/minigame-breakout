@@ -1,0 +1,33 @@
+* {
+    margin: 0;
+    border: 0;
+    color: #8E8E8E;
+    box-sizing: border-box;
+    font-family: 'consolas';
+    text-align: center;
+}
+
+body {
+    height: 100%;
+    background: black;
+    
+}
+
+h1 {
+    padding-top: 2rem;
+    letter-spacing: 1rem;
+}
+
+#fps {
+    text-align: right;
+}
+
+#game-canvas {
+    display: block;
+    margin: auto;
+/*    padding-top: 1000px solid black;*/
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border: 15px solid #8E8E8E;
+    border-bottom: none;
+}
