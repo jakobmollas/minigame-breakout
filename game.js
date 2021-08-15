@@ -102,22 +102,23 @@ function moveBall() {
 }
 
 function checkBallToWallCollision() {
-    if (ball.x < 0 + ballRadius) { 
-        ballVelocity.invertX(); 
-        ball.x = 1 + ballRadius; 
+    if (ball.x < 0 + ballRadius) {
+        ballVelocity.invertX();
+        ball.x = 1 + ballRadius;
     }
-    else if (ball.x > width - ballRadius) { 
-        ballVelocity.invertX(); 
-        ball.x = width - 1 - ballRadius; 
+    else if (ball.x > width - ballRadius) {
+        ballVelocity.invertX();
+        ball.x = width - 1 - ballRadius;
     }
 
-    if (ball.y < 0 + ballRadius) { 
-        ballVelocity.invertY(); 
-        ball.y = 1 + ballRadius; 
+    if (ball.y < 0 + ballRadius) {
+        ballVelocity.invertY();
+        ball.y = 1 + ballRadius;
     }
-    else if (ball.y > height - ballRadius) { 
-        ballVelocity.invertY(); 
-        ball.y = height - 1 - ballRadius; }
+    else if (ball.y > height - ballRadius) {
+        ballVelocity.invertY();
+        ball.y = height - 1 - ballRadius;
+    }
 }
 
 function checkBallToBatCollision() {
@@ -144,26 +145,35 @@ function checkBallToBrickCollision() {
                 continue;
             }
 
-            var collision = checkPointAndRectangleCollision(ball.x, ball.y, ballRadius, col * brickWidth, topMargin + row * brickHeight, brickWidth, brickHeight);
-            if (collision !== 0) {
-                switch (collision) {
-                    case 1:
-                        ballVelocity.invertX();
-                        break;
-
-                    case 2:
-                        ballVelocity.invertY();
-                        break;
-
-                    // case 3:
-                    //     ballVelocity.invert.x = -ballVelocity.x;
-                    //     ballDirY = -ballDirY;
-                    //     break;
-                }
-
+            //var collision = checkPointAndRectangleCollision(ball.x, ball.y, ballRadius, col * brickWidth, topMargin + row * brickHeight, brickWidth, brickHeight);
+            if (intersects(ball, ballRadius, new Vector2d(col * brickWidth, topMargin + row * brickHeight), brickWidth, brickHeight)) {
+                ballVelocity.invertY();
                 brick.active = false;
+
+                // Todo: check incoming direction, reflect accordingly
+
                 return;
             }
+
+            // if (collision !== 0) {
+            //     switch (collision) {
+            //         case 1:
+            //             ballVelocity.invertX();
+            //             break;
+
+            //         case 2:
+            //             ballVelocity.invertY();
+            //             break;
+
+            //         // case 3:
+            //         //     ballVelocity.invert.x = -ballVelocity.x;
+            //         //     ballDirY = -ballDirY;
+            //         //     break;
+            //     }
+
+            //     brick.active = false;
+            //     return;
+            // }
         }
     }
 }
@@ -248,6 +258,27 @@ function checkPointAndRectangleCollision(px, py, r, rx, ry, w, h) {
 
     // // Todo: CHeck closest axis
     // return (cornerDistance_sq <= Math.pow(r, 2)) ? 2 : 0;
+}
+
+function intersects(circle, radius, rectangle, rectWidth, rectHeight) {
+    let circleDistancex = Math.abs(circle.x - (rectangle.x + rectWidth / 2));
+    let circleDistancey = Math.abs(circle.y - (rectangle.y + rectHeight / 2));
+
+    if (circleDistancex > (rectWidth / 2 + radius) ||
+        circleDistancey > (rectHeight / 2 + radius)) {
+        return false;
+    }
+
+    if (circleDistancex <= (rectWidth / 2 + radius) ||
+        (circleDistancey <= (rectHeight / 2 + radius))) {
+        return true;
+    }
+
+    let cornerDistance_sq =
+        Math.pow((circleDistancex - rectWidth / 2), 2) +
+        Math.pow((circleDistancey - rectHeight / 2), 2);
+
+    return (cornerDistance_sq <= Math.pow(radius, 2));
 }
 
 function drawScore(score) {
