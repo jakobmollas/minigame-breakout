@@ -1,16 +1,18 @@
 'use strict'
 
+// Todo: use deltatime for calculations
 // Todo: add scoring
 // todo: add live counter, decrease lives
 // todo: add speed-up as per original game
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
 // Todo: Refactor
-// Todo: use deltatime for calculations
+
+
 // todo: add fast speed, for example holding ctrl?
 // Todo: do not launch ball until space (or smth) is pressed, allow bat movement
 // Todo: scale to device width? With max width? 
 // Todo: add support for mobile devices, for example tap to launch/restart, swipe to move etc.
-// Todo: Change angle based on point of impact with bat to be able to aim somewhat
+// Todo: Only check brick collisions when reasonable, no need to check when above/belov brick area? Maybe check at current pos plus all bricks around that pos?
 
 const columns = 18;
 const rows = 6;
@@ -150,8 +152,6 @@ function checkBallToBatCollision() {
 }
 
 function checkBallToBrickCollision() {
-    // Todo: Only check when reasonable, no need to check when above/belov brick area? Maybe check at current pos plus all bricks around that pos?
-
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
             let brick = bricks[row * columns + col];
@@ -253,7 +253,7 @@ function drawGameOver(gameOver) {
 
 function drawFps() {
     let stats = document.getElementById("fps");
-    stats.innerHTML = "FPS: " + ballVelocity.heading().toFixed(2);
+    stats.innerHTML = "Ball heading: " + ballVelocity.heading().toFixed(2);
     //stats.innerHTML = "FPS: " + fps.toFixed() + " (" + deltaTime.toFixed() + " ms)";
 }
 
