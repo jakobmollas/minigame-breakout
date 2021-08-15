@@ -7,7 +7,6 @@
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
 // Todo: Refactor
 
-
 // todo: add fast speed, for example holding ctrl?
 // Todo: do not launch ball until space (or smth) is pressed, allow bat movement
 // Todo: scale to device width? With max width? 
@@ -79,8 +78,6 @@ function processGameLogic() {
     checkBallToWallCollision();
     checkBallToBatCollision();
     checkBallToBrickCollision();
-
-    // todo: check lost ball, remove life, check game over etc.
 }
 
 function render() {
@@ -145,13 +142,14 @@ function checkBallToBatCollision() {
 
     // let point of impact affect bounce
     let impactRotation = ((ball.x - bat.x) / batWidth - 0.5) * 4;
-    
+
     // clamp to some min/max angles to avoid very shallow angles
     let newHeading = clamp(ballVelocity.heading() + impactRotation, -Math.PI * 0.75, -Math.PI * 0.25);
     ballVelocity.setHeading(newHeading);
 }
 
 function checkBallToBrickCollision() {
+    // Todo: first check brick at ball pos, then bricks above/below/left/right, then diagonal bricks, this will remove a few edge cases
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
             let brick = bricks[row * columns + col];
@@ -159,11 +157,44 @@ function checkBallToBrickCollision() {
                 continue;
             }
 
+            // Todo: refactor
+
             if (intersects(ball, ballRadius, new Vector2d(col * brickWidth, topMargin + row * brickHeight), brickWidth, brickHeight)) {
-                ballVelocity.invertY();
+                let cornerURx = (col + 1) * brickWidth + ballRadius;
+                let cornerURy = topMargin + row * brickHeight - ballRadius;
+                let cornerULx = col * brickWidth - ballRadius;
+                let cornerULy = topMargin + row * brickHeight - ballRadius;
+                let cornerLRx = (col + 1) * brickWidth + ballRadius;
+                let cornerLRy = topMargin + (row + 1) * brickHeight + ballRadius;
+                let cornerLLx = col * brickWidth - ballRadius;
+                let cornerLLy = topMargin + (row + 1) * brickHeight + ballRadius;
+
+                let v1 = new Vector2d(cornerURx, cornerURy);
+                v1.subtract(ball);
+                let h1 = v1.heading();
+
+                let v2 = new Vector2d(cornerULx, cornerULy);
+                v2.subtract(ball);
+                let h2 = v2.heading();
+
+                let v3 = new Vector2d(cornerLLx, cornerLLy);
+                v3.subtract(ball);
+                let h3 = v3.heading();
+
+                let v4 = new Vector2d(cornerLRx, cornerLRy);
+                v4.subtract(ball);
+                let h4 = v4.heading();
+
+                let invertedBallHeading = ballVelocity.clone().invert().heading();
+                if (isAngleBetween(invertedBallHeading, h1, h2) || isAngleBetween(invertedBallHeading, h3, h4)) {
+                    ballVelocity.invertY();
+                }
+                else {
+                    ballVelocity.invertX();
+                }
                 brick.active = false;
 
-                // Todo: check incoming direction, reflect accordingly
+
 
 
                 return;
@@ -303,4 +334,20 @@ function clamp(value, min, max) {
     if (value > max) return max;
     if (value < min) return min;
     return value;
+}
+
+function isAngleBetween(target, angle1, angle2) {
+    if (angle1 <= angle2) {
+        if (angle2 - angle1 <= Math.PI) {
+            return angle1 <= target && target <= angle2;
+        }
+
+        return angle2 <= target || target <= angle1;
+    }
+
+    if (angle1 - angle2 <= Math.PI) {
+        return angle2 <= target && target <= angle1;
+    }
+
+    return angle1 <= target || target <= angle2;
 }

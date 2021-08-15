@@ -15,6 +15,10 @@ class Vector2d {
         return new Vector2d(length * Math.cos(angle), length * Math.sin(angle), 0);
     };
 
+    clone() {
+        return new Vector2d(this.x, this.y);
+    }
+
     heading() {
         return Math.atan2(this.y, this.x);
     }
@@ -33,16 +37,18 @@ class Vector2d {
     rotate(radians) {
         let newHeading = this.heading() + radians;
         return this.setHeading(newHeading);
-        // const magnitude = this.mag();
-        // this.x = Math.cos(newHeading) * magnitude;
-        // this.y = Math.sin(newHeading) * magnitude;
-        
-        //return this;
       };
 
     add(other) {
         this.x += other.x || 0;
         this.y += other.y || 0;
+
+        return this;
+    }
+
+    subtract(other) {
+        this.x -= other.x || 0;
+        this.y -= other.y || 0;
 
         return this;
     }
@@ -53,6 +59,12 @@ class Vector2d {
     }
 
     invertY() {
+        this.y = -this.y;
+        return this;
+    }
+
+    invert() {
+        this.x = -this.x;
         this.y = -this.y;
         return this;
     }
