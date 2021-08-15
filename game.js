@@ -28,6 +28,7 @@ let width = 0;
 let bat;
 let ball;
 let ballVelocity;
+let batSpeed = 5;
 let score = 0;
 let gameOver = false;
 let leftPressed = false;
@@ -94,7 +95,7 @@ function render() {
 function moveBat() {
     let movementX = leftPressed ? -1 : 0;
     movementX = rightPressed ? 1 : movementX;
-    bat.x += movementX * 15;
+    bat.x += movementX * batSpeed;
 
     if (bat.x < 0) {
         bat.x = 0;
@@ -129,17 +130,27 @@ function checkBallToWallCollision() {
 }
 
 function checkBallToBatCollision() {
-    if (ball.y + ballRadius > bat.y) {
-        if (ball.x >= bat.x && ball.x <= bat.x + batWidth) {
-            
-            ballVelocity.invertY();
-            ball.y = bat.y - ballRadius;
-        }
+    if (ball.y + ballRadius < bat.y) {
+        return;
     }
+
+    if (ball.x < bat.x || ball.x > bat.x + batWidth) {
+        return;
+    }
+
+    ballVelocity.invertY();
+    ball.y = bat.y - ballRadius;
+
+    // let point of impact affect bounce
+    let impactRotation = ((ball.x - bat.x) / batWidth - 0.5) * 4;
+    
+    // clamp to some min/max angles to avoid very shallow angles
+    let newHeading = clamp(ballVelocity.heading() + impactRotation, -Math.PI * 0.75, -Math.PI * 0.25);
+    ballVelocity.setHeading(newHeading);
 }
 
 function checkBallToBrickCollision() {
-    // Todo: Only check when reasonable, no need to check when above/belov brick area?
+    // Todo: Only check when reasonable, no need to check when above/belov brick area? Maybe check at current pos plus all bricks around that pos?
 
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
@@ -154,6 +165,7 @@ function checkBallToBrickCollision() {
 
                 // Todo: check incoming direction, reflect accordingly
 
+
                 return;
             }
         }
@@ -161,7 +173,7 @@ function checkBallToBrickCollision() {
 }
 
 function drawBackground() {
-    context.fillStyle = "black";
+    context.fillStyle = "#00000055";
     context.fillRect(0, 0, canvas.width, canvas.height);
 }
 
@@ -201,24 +213,27 @@ function getBrickColor(rowNumber) {
 }
 
 function intersects(circle, radius, rectangle, rectWidth, rectHeight) {
-    let distX = Math.abs(circle.x - (rectangle.x + rectWidth / 2));
-    let distY = Math.abs(circle.y - (rectangle.y + rectHeight / 2));
+    const halfWidth = rectWidth / 2;
+    const halfHeight = rectHeight / 2;
 
-    if (distX > (rectWidth / 2 + radius) ||
-        distY > (rectHeight / 2 + radius)) {
+    let distX = Math.abs(circle.x - (rectangle.x + halfWidth));
+    let distY = Math.abs(circle.y - (rectangle.y + halfHeight));
+
+    if (distX > (halfWidth + radius) ||
+        distY > (halfHeight + radius)) {
         return false;
     }
 
-    if (distX <= (rectWidth / 2 + radius) ||
-        distY <= (rectHeight / 2 + radius)) {
+    if (distX <= (halfWidth + radius) ||
+        distY <= (halfHeight + radius)) {
         return true;
     }
 
     let cornerDistance_sq =
-        Math.pow((distX - rectWidth / 2), 2) +
-        Math.pow((distY - rectHeight / 2), 2);
+        Math.pow((distX - halfWidth), 2) +
+        Math.pow((distY - halfHeight), 2);
 
-    return cornerDistance_sq <= Math.pow(radius, 2);
+    return cornerDistance_sq <= radius * radius;
 }
 
 function drawScore(score) {
@@ -238,7 +253,8 @@ function drawGameOver(gameOver) {
 
 function drawFps() {
     let stats = document.getElementById("fps");
-    stats.innerHTML = "FPS: " + fps.toFixed() + " (" + deltaTime.toFixed() + " ms)";
+    stats.innerHTML = "FPS: " + ballVelocity.heading().toFixed(2);
+    //stats.innerHTML = "FPS: " + fps.toFixed() + " (" + deltaTime.toFixed() + " ms)";
 }
 
 function keyDown(e) {
@@ -281,4 +297,10 @@ function initialize() {
             bricks.push({ active: true, color: row })
         }
     }
+}
+
+function clamp(value, min, max) {
+    if (value > max) return max;
+    if (value < min) return min;
+    return value;
 }
