@@ -1,5 +1,10 @@
 'use strict'
 
+// Todo: Make canvas and all sizes dynamic, to support high dpi screens?
+// Todo: Refactor
+// Todo: use deltatime for calculations
+// todo: add fast speed, for example holding ctrl?
+
 const columns = 18;
 const rows = 6;
 const brickWidth = 30;
@@ -13,19 +18,16 @@ let canvas;
 let context;
 let height = 0;
 let width = 0;
-let batX = 0;
-let batY = 0;
-let ballX = 0;
-let ballY = 0;
-let ballDirX = 0;
-let ballDirY = 0;
+let bat;
+let ball;
+let ballVelocity;
 let score = 0;
 let gameOver = false;
 let leftPressed = false;
 let rightPressed = false;
 let bricks = [];
 
-// Todo: remove?
+// Todo: remove? use dev tools instead
 let deltaTime = 0;
 let fps = 0;
 let lastTimestamp = 0;
@@ -48,7 +50,7 @@ window.onload = function () {
 function mainLoop() {
     deltaTime = lastTimestamp != null ? performance.now() - lastTimestamp : 0;
     fps = deltaTime > 0 ? 1000 / deltaTime : 0;
-    
+
     processGameLogic();
     render();
 
@@ -61,47 +63,80 @@ function processGameLogic() {
         return;
     }
 
-    // move
-    let movementX = leftPressed ? -1 : 0;
-    movementX = rightPressed ? 1 : movementX;
-    batX += movementX * 15;
+    moveBat();
+    moveBall();
 
-    if (batX < 0) {
-        batX = 0;
-    }
-    if (batX + batWidth > width) {
-        batX = width - batWidth;
-    }
-
-    // ball
-    ballX += ballDirX;
-    ballY += ballDirY;
-
-    // check wall collision
-    if (ballX < 0 + ballRadius || ballX > width - ballRadius) { ballDirX = -ballDirX; }
-    if (ballY < 0 + ballRadius || ballY > height - ballRadius) { ballDirY = -ballDirY; }
-
-    // bounce off of bat
-    if (ballY + ballRadius > batY) {
-        if (ballX >= batX && ballX <= batX + batWidth) {
-            // Todo: Change angle based on point of impact
-            // var xDiff = ballX - batX;
-            // var relDiff = xDiff / batWidth - 0.5;
-            // console.log(relDiff);
-            ballDirY = -ballDirY;
-            //ballDirX += relDiff * 5;
-            //ballDirY -= relDiff * 5;
-        }
-    }
-
-    // check brick collision, remove brick, bounce, increment score, increment speed, check for game over/new level etc
-    checkBrickCollision();
+    checkBallToWallCollision();
+    checkBallToBatCollision
+    checkBallToBrickCollision();
 
     // todo: check lost ball, remove life, check game over etc.
 }
 
-function checkBrickCollision() {
-    // Todo: Improve collision logic, account for the full ball, not just center
+function render() {
+    drawBackground();
+    drawBricks();
+    drawBat();
+    drawBall();
+
+    drawScore(score);
+    drawGameOver(gameOver);
+    drawFps();
+}
+
+function moveBat() {
+    let movementX = leftPressed ? -1 : 0;
+    movementX = rightPressed ? 1 : movementX;
+    bat.x += movementX * 15;
+
+    if (bat.x < 0) {
+        bat.x = 0;
+    }
+    else if (bat.x + batWidth > width) {
+        bat.x = width - batWidth;
+    }
+}
+
+function moveBall() {
+    ball.add(ballVelocity);
+}
+
+function checkBallToWallCollision() {
+    if (ball.x < 0 + ballRadius) { 
+        ballVelocity.invertX(); 
+        ball.x = 1 + ballRadius; 
+    }
+    else if (ball.x > width - ballRadius) { 
+        ballVelocity.invertX(); 
+        ball.x = width - 1 - ballRadius; 
+    }
+
+    if (ball.y < 0 + ballRadius) { 
+        ballVelocity.invertY(); 
+        ball.y = 1 + ballRadius; 
+    }
+    else if (ball.y > height - ballRadius) { 
+        ballVelocity.invertY(); 
+        ball.y = height - 1 - ballRadius; }
+}
+
+function checkBallToBatCollision() {
+    if (ball.y + ballRadius > bat.y) {
+        if (ball.x >= bat.x && ball.x <= bat.x + batWidth) {
+            // Todo: Change angle based on point of impact
+            // var xDiff = ball.x - batX;
+            // var relDiff = xDiff / batWidth - 0.5;
+            // console.log(relDiff);
+            //ballDirY = -ballDirY;
+            //ballVelocity.x += relDiff * 5;
+            //ballDirY -= relDiff * 5;
+        }
+    }
+}
+
+function checkBallToBrickCollision() {
+    // Todo: Only check when reasonable, no need to check when above/belov brick area?
+
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
             let brick = bricks[row * columns + col];
@@ -109,29 +144,36 @@ function checkBrickCollision() {
                 continue;
             }
 
-            if (ballX >= col*brickWidth && 
-                ballX <= col*brickWidth + brickWidth && 
-                ballY >= topMargin + row*brickHeight && 
-                ballY <= topMargin +row*brickHeight + brickHeight) {
+            var collision = checkPointAndRectangleCollision(ball.x, ball.y, ballRadius, col * brickWidth, topMargin + row * brickHeight, brickWidth, brickHeight);
+            if (collision !== 0) {
+                switch (collision) {
+                    case 1:
+                        ballVelocity.invertX();
+                        break;
+
+                    case 2:
+                        ballVelocity.invertY();
+                        break;
+
+                    // case 3:
+                    //     ballVelocity.invert.x = -ballVelocity.x;
+                    //     ballDirY = -ballDirY;
+                    //     break;
+                }
+
                 brick.active = false;
-                ballDirY = -ballDirY;
-                //ballDirX = -ballDirX;
                 return;
             }
-            // context.fillStyle = getBrickColor(row);
-            // if (brick.active) {
-            //     context.fillRect(col * brickWidth, row * brickHeight + topMargin, brickWidth - 1, brickHeight - 1);
-            // }
         }
     }
 }
 
-function render() {
-    // background
+function drawBackground() {
     context.fillStyle = "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
+}
 
-    // bricks
+function drawBricks() {
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
             let brick = bricks[row * columns + col];
@@ -141,21 +183,18 @@ function render() {
             }
         }
     }
+}
 
-    // player bat
+function drawBat() {
     context.fillStyle = "#D45345";
-    context.fillRect(batX, batY, batWidth, batHeight);
+    context.fillRect(bat.x, bat.y, batWidth, batHeight);
+}
 
-    // ball
+function drawBall() {
     context.fillStyle = "#D45345";
     context.beginPath();
-    context.arc(ballX, ballY, 5, 0, 2*Math.PI);
+    context.arc(ball.x, ball.y, 5, 0, 2 * Math.PI);
     context.fill();
-
-    // scoring etc.
-    showScore(score);
-    showGameOver(gameOver);
-    showFps();
 }
 
 function getBrickColor(rowNumber) {
@@ -169,12 +208,54 @@ function getBrickColor(rowNumber) {
     }
 }
 
-function showScore(score) {
+function checkPointAndRectangleCollision(px, py, r, rx, ry, w, h) {
+    // Todo: refactor
+
+    let circleDistanceX = Math.abs(px - (rx + w / 2));
+    let circleDistanceY = Math.abs(py - (ry + h / 2));
+
+    // In range?
+    if (circleDistanceX > (w / 2 + r) ||
+        circleDistanceY > (h / 2 + r)) {
+        return 0;
+    }
+
+    // check clean horz/vert collisions
+    // Todo: simpify, no need to do first check?
+    var isHorHit = circleDistanceX <= (w / 2 + r) && py >= ry && py <= ry + h;
+    var isVertHit = circleDistanceY <= (h / 2 + r) && px >= rx && px <= rx + w;
+
+    if (isHorHit) return 1;
+    if (isVertHit) return 2;
+
+    // we are still in range, meaning this is a collision with a corner, 
+    // determine if this should be treated as horz or vert collision
+    let horzDist = Math.abs(circleDistanceX - (w / 2 + r));
+    let vertDist = Math.abs(circleDistanceY - (h / 2 + r));
+
+    // exact hit at corner
+    if (horzDist === vertDist) {
+        return 3;
+    }
+
+    isHorHit = horzDist < vertDist;
+    isVertHit = !isHorHit;
+
+    return horzDist < vertDist ? 1 : 2;
+    // let cornerDistance_sq =
+    //     Math.pow(circleDistanceX - w / 2, 2) +
+    //     Math.pow(circleDistanceY - h / 2, 2);
+
+    // // Todo: CHeck closest axis
+    // return (cornerDistance_sq <= Math.pow(r, 2)) ? 2 : 0;
+}
+
+function drawScore(score) {
     let scoreBoard = document.getElementById("score");
     scoreBoard.innerHTML = "Score: " + score;
 }
 
-function showGameOver(gameOver) {
+function drawGameOver(gameOver) {
     if (!gameOver) {
         return;
     }
@@ -184,7 +265,7 @@ function showGameOver(gameOver) {
     context.fillText("OVER", 70, 300);
 }
 
-function showFps() {
+function drawFps() {
     let stats = document.getElementById("fps");
     stats.innerHTML = "FPS: " + fps.toFixed() + " (" + deltaTime.toFixed() + " ms)";
 }
@@ -196,34 +277,29 @@ function keyDown(e) {
         return;
     }
 
-    switch (e.keyCode) {
-        case 37:    // left arrow
-            leftPressed = true;
-            break;
-
-        case 39:    // right arrow
-            rightPressed = true;
-            break;
-    }
+    handleArrowKeys(e, true);
 }
 
 function keyUp(e) {
+    handleArrowKeys(e, false);
+}
+
+function handleArrowKeys(e, isKeyDown) {
     switch (e.keyCode) {
         case 37:    // left arrow
-            leftPressed = false;
+            leftPressed = isKeyDown;
             break;
 
         case 39:    // right arrow
-            rightPressed = false;
+            rightPressed = isKeyDown;
             break;
     }
 }
 
 function initialize() {
-    batX = width / 2 - batWidth / 2;
-    batY = height - 2 * batHeight;
-    ballX = ballY = 300;
-    ballDirX = ballDirY = 5;
+    bat = new Vector2d(width / 2 - batWidth / 2, height - 2 * batHeight);
+    ball = new Vector2d(bat.x + batWidth / 2, bat.y - ballRadius);
+    ballVelocity = new Vector2d(-2, -3.5);
     score = 0;
     gameOver = false;
     leftPressed = rightPressed = false;
@@ -234,4 +310,6 @@ function initialize() {
             bricks.push({ active: true, color: row })
         }
     }
+
+    // Todo: do not launch ball until space (or smth) is pressed, allow bat movement
 }

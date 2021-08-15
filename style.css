@@ -1,5 +1,6 @@
 * {
     margin: 0;
+    padding: 0;
     border: 0;
     color: #8E8E8E;
     box-sizing: border-box;
@@ -7,10 +8,12 @@
     text-align: center;
 }
 
-body {
+html {
     height: 100%;
+}
+
+body {
     background: black;
-    
 }
 
 h1 {
@@ -25,9 +28,8 @@ h1 {
 #game-canvas {
     display: block;
     margin: auto;
-/*    padding-top: 1000px solid black;*/
     margin-top: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1rem;   
     border: 15px solid #8E8E8E;
     border-bottom: none;
 }
