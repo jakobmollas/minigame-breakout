@@ -4,6 +4,9 @@
 // Todo: Refactor
 // Todo: use deltatime for calculations
 // todo: add fast speed, for example holding ctrl?
+// Todo: do not launch ball until space (or smth) is pressed, allow bat movement
+// Todo: scale to device width? With max width? 
+// Todo: add support for mobile devices, for example tap to launch/restart, swipe to move etc.
 
 const columns = 18;
 const rows = 6;
@@ -67,7 +70,7 @@ function processGameLogic() {
     moveBall();
 
     checkBallToWallCollision();
-    checkBallToBatCollision
+    checkBallToBatCollision();
     checkBallToBrickCollision();
 
     // todo: check lost ball, remove life, check game over etc.
@@ -104,33 +107,31 @@ function moveBall() {
 function checkBallToWallCollision() {
     if (ball.x < 0 + ballRadius) {
         ballVelocity.invertX();
-        ball.x = 1 + ballRadius;
+        ball.x = ballRadius;
     }
     else if (ball.x > width - ballRadius) {
         ballVelocity.invertX();
-        ball.x = width - 1 - ballRadius;
+        ball.x = width - ballRadius;
     }
 
     if (ball.y < 0 + ballRadius) {
         ballVelocity.invertY();
-        ball.y = 1 + ballRadius;
+        ball.y = ballRadius;
     }
     else if (ball.y > height - ballRadius) {
         ballVelocity.invertY();
-        ball.y = height - 1 - ballRadius;
+        ball.y = height - ballRadius;
     }
 }
 
 function checkBallToBatCollision() {
     if (ball.y + ballRadius > bat.y) {
         if (ball.x >= bat.x && ball.x <= bat.x + batWidth) {
-            // Todo: Change angle based on point of impact
-            // var xDiff = ball.x - batX;
-            // var relDiff = xDiff / batWidth - 0.5;
-            // console.log(relDiff);
-            //ballDirY = -ballDirY;
-            //ballVelocity.x += relDiff * 5;
-            //ballDirY -= relDiff * 5;
+            
+            ballVelocity.invertY();
+            ball.y = bat.y - ballRadius;
+
+            // Todo: Change angle based on point of impact to be able to aim somewhat
         }
     }
 }
@@ -278,6 +279,4 @@ function initialize() {
             bricks.push({ active: true, color: row })
         }
     }
-
-    // Todo: do not launch ball until space (or smth) is pressed, allow bat movement
 }
