@@ -29,7 +29,7 @@ let width = 0;
 let bat;
 let ball;
 let ballVelocity;
-let batSpeed = 5;
+let batSpeed = 10;
 let score = 0;
 let gameOver = false;
 let leftPressed = false;
@@ -149,7 +149,18 @@ function checkBallToBatCollision() {
 }
 
 function checkBallToBrickCollision() {
-    // Todo: first check brick at ball pos, then bricks above/below/left/right, then diagonal bricks, this will remove a few edge cases
+    // Todo: Check brick at ball pos, then bricks above/below/left/right, then diagonal bricks, this will remove a few edge cases
+    // let bricksToCheck = new[];
+    // bricksToCheck.push(bricks[(row - 1) * columns + col - 1]);
+    // bricksToCheck.push(bricks[(row - 1) * columns + col + 1]);
+    // bricksToCheck.push(bricks[(row + 1) * columns + col - 1]);
+    // bricksToCheck.push(bricks[(row + 1) * columns + col + 1]);
+    // bricksToCheck.push(bricks[(row - 1) * columns + col]);
+    // bricksToCheck.push(bricks[(row + 1) * columns + col]);
+    // bricksToCheck.push(bricks[row * columns + col - 1]);
+    // bricksToCheck.push(bricks[row * columns + col + 1]);
+    // bricksToCheck.push(bricks[row * columns + col]);
+
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
             let brick = bricks[row * columns + col];
@@ -317,7 +328,7 @@ function handleArrowKeys(e, isKeyDown) {
 function initialize() {
     bat = new Vector2d(width / 2 - batWidth / 2, height - 2 * batHeight);
     ball = new Vector2d(bat.x + batWidth / 2, bat.y - ballRadius);
-    ballVelocity = new Vector2d(-2, -3.5);
+    ballVelocity = new Vector2d(-3, -4.5);
     score = 0;
     gameOver = false;
     leftPressed = rightPressed = false;
@@ -337,17 +348,11 @@ function clamp(value, min, max) {
 }
 
 function isAngleBetween(target, angle1, angle2) {
-    if (angle1 <= angle2) {
-        if (angle2 - angle1 <= Math.PI) {
-            return angle1 <= target && target <= angle2;
-        }
-
-        return angle2 <= target || target <= angle1;
-    }
-
-    if (angle1 - angle2 <= Math.PI) {
-        return angle2 <= target && target <= angle1;
-    }
-
-    return angle1 <= target || target <= angle2;
+    return angle1 <= angle2
+        ? angle2 - angle1 <= Math.PI
+            ? angle1 <= target && target <= angle2
+            : angle2 <= target || target <= angle1
+        : angle1 - angle2 <= Math.PI
+            ? angle2 <= target && target <= angle1
+            : angle1 <= target || target <= angle2;
 }
