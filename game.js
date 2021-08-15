@@ -1,5 +1,8 @@
 'use strict'
 
+// Todo: add scoring
+// todo: add live counter, decrease lives
+// todo: add speed-up as per original game
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
 // Todo: Refactor
 // Todo: use deltatime for calculations
@@ -7,6 +10,7 @@
 // Todo: do not launch ball until space (or smth) is pressed, allow bat movement
 // Todo: scale to device width? With max width? 
 // Todo: add support for mobile devices, for example tap to launch/restart, swipe to move etc.
+// Todo: Change angle based on point of impact with bat to be able to aim somewhat
 
 const columns = 18;
 const rows = 6;
@@ -130,8 +134,6 @@ function checkBallToBatCollision() {
             
             ballVelocity.invertY();
             ball.y = bat.y - ballRadius;
-
-            // Todo: Change angle based on point of impact to be able to aim somewhat
         }
     }
 }
