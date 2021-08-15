@@ -145,7 +145,6 @@ function checkBallToBrickCollision() {
                 continue;
             }
 
-            //var collision = checkPointAndRectangleCollision(ball.x, ball.y, ballRadius, col * brickWidth, topMargin + row * brickHeight, brickWidth, brickHeight);
             if (intersects(ball, ballRadius, new Vector2d(col * brickWidth, topMargin + row * brickHeight), brickWidth, brickHeight)) {
                 ballVelocity.invertY();
                 brick.active = false;
@@ -154,26 +153,6 @@ function checkBallToBrickCollision() {
 
                 return;
             }
-
-            // if (collision !== 0) {
-            //     switch (collision) {
-            //         case 1:
-            //             ballVelocity.invertX();
-            //             break;
-
-            //         case 2:
-            //             ballVelocity.invertY();
-            //             break;
-
-            //         // case 3:
-            //         //     ballVelocity.invert.x = -ballVelocity.x;
-            //         //     ballDirY = -ballDirY;
-            //         //     break;
-            //     }
-
-            //     brick.active = false;
-            //     return;
-            // }
         }
     }
 }
@@ -218,67 +197,25 @@ function getBrickColor(rowNumber) {
     }
 }
 
-function checkPointAndRectangleCollision(px, py, r, rx, ry, w, h) {
-    // Todo: refactor
-
-    let circleDistanceX = Math.abs(px - (rx + w / 2));
-    let circleDistanceY = Math.abs(py - (ry + h / 2));
-
-    // In range?
-    if (circleDistanceX > (w / 2 + r) ||
-        circleDistanceY > (h / 2 + r)) {
-        return 0;
-    }
-
-    // check clean horz/vert collisions
-    // Todo: simpify, no need to do first check?
-    var isHorHit = circleDistanceX <= (w / 2 + r) && py >= ry && py <= ry + h;
-    var isVertHit = circleDistanceY <= (h / 2 + r) && px >= rx && px <= rx + w;
-
-    if (isHorHit) return 1;
-    if (isVertHit) return 2;
-
-    // we are still in range, meaning this is a collision with a corner, 
-    // determine if this should be treated as horz or vert collision
-    let horzDist = Math.abs(circleDistanceX - (w / 2 + r));
-    let vertDist = Math.abs(circleDistanceY - (h / 2 + r));
-
-    // exact hit at corner
-    if (horzDist === vertDist) {
-        return 3;
-    }
-
-    isHorHit = horzDist < vertDist;
-    isVertHit = !isHorHit;
-
-    return horzDist < vertDist ? 1 : 2;
-    // let cornerDistance_sq =
-    //     Math.pow(circleDistanceX - w / 2, 2) +
-    //     Math.pow(circleDistanceY - h / 2, 2);
-
-    // // Todo: CHeck closest axis
-    // return (cornerDistance_sq <= Math.pow(r, 2)) ? 2 : 0;
-}
-
 function intersects(circle, radius, rectangle, rectWidth, rectHeight) {
-    let circleDistancex = Math.abs(circle.x - (rectangle.x + rectWidth / 2));
-    let circleDistancey = Math.abs(circle.y - (rectangle.y + rectHeight / 2));
+    let distX = Math.abs(circle.x - (rectangle.x + rectWidth / 2));
+    let distY = Math.abs(circle.y - (rectangle.y + rectHeight / 2));
 
-    if (circleDistancex > (rectWidth / 2 + radius) ||
-        circleDistancey > (rectHeight / 2 + radius)) {
+    if (distX > (rectWidth / 2 + radius) ||
+        distY > (rectHeight / 2 + radius)) {
         return false;
     }
 
-    if (circleDistancex <= (rectWidth / 2 + radius) ||
-        (circleDistancey <= (rectHeight / 2 + radius))) {
+    if (distX <= (rectWidth / 2 + radius) ||
+        distY <= (rectHeight / 2 + radius)) {
         return true;
     }
 
     let cornerDistance_sq =
-        Math.pow((circleDistancex - rectWidth / 2), 2) +
-        Math.pow((circleDistancey - rectHeight / 2), 2);
+        Math.pow((distX - rectWidth / 2), 2) +
+        Math.pow((distY - rectHeight / 2), 2);
 
-    return (cornerDistance_sq <= Math.pow(radius, 2));
+    return cornerDistance_sq <= Math.pow(radius, 2);
 }
 
 function drawScore(score) {
