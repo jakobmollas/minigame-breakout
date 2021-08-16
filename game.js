@@ -6,9 +6,7 @@
 
 // todo: add live counter, decrease lives
 // Todo: remove bottom bounce when not needed, or hide with setting
-// todo: shrink bat to 1/2 size when hitting back wall
 // todo: 2 screens max, then game over
-// todo: change ball color based on row
 // Todo: Refactor
 
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
@@ -19,7 +17,8 @@ const columns = 18;
 const rows = 10;
 const brickWidth = 30;
 const brickHeight = 15;
-const batWidth = 3 * brickWidth;
+const batSmallWidth = 1.5 * brickWidth;
+const batLargeWidth = 3 * brickWidth;
 const batHeight = 0.5 * brickHeight;
 const ballRadius = 5;
 const speed1 = 40;
@@ -37,6 +36,7 @@ let mouseX = 0;
 let bat;
 let ball;
 let ballDirection;
+let batWidth;
 let score;
 let lives;
 let gameSpeed;
@@ -130,6 +130,8 @@ function checkBallToWallCollision() {
 
     if (ball.y < ballRadius || ball.y > height - ballRadius) {
         ballDirection.invertY();
+        topWallHasBeenHit = ball.y < ballRadius;
+
         ball.y = clamp(ball.y, ballRadius, height - ballRadius);
     }
 }
@@ -221,7 +223,9 @@ function handleSpeedUp() {
 }
 
 function handleBatSize() {
-    // todo: implement
+    if (topWallHasBeenHit && batWidth > batSmallWidth) {
+        batWidth = batSmallWidth;
+    }
 }
 
 function drawBackground() {
@@ -242,7 +246,7 @@ function drawBat() {
 }
 
 function drawBall() {
-    context.fillStyle = getBrickColor(getCellFromXY(ball).y);//"#D45345";
+    context.fillStyle = getBrickColor(getCellFromXY(ball).y);
     context.beginPath();
     context.arc(ball.x, ball.y, 5, 0, 2 * Math.PI);
     context.fill();
@@ -317,6 +321,7 @@ function mouseDown(e) {
 }
 
 function initialize() {
+    batWidth = batLargeWidth;
     bat = new Point2d(width / 2 - batWidth / 2, height - 2 * batHeight);
     ball = new Vector2d(bat.x + batWidth / 2, bat.y - ballRadius);
     ballDirection = new Vector2d(0.7, -1);
@@ -341,7 +346,7 @@ function createBricks() {
             let top = row * brickHeight;
             let color = getBrickColor(row);
             let score = getBrickScore(row);
-            let active = row > 3;
+            let active = row > 8;
             bricks.push(new Brick(left, top, brickWidth, brickHeight, col, row, color, score, active));
         }
     }
