@@ -346,7 +346,7 @@ function createBricks() {
             let top = row * brickHeight;
             let color = getBrickColor(row);
             let score = getBrickScore(row);
-            let active = row > 8;
+            let active = row > 3;
             bricks.push(new Brick(left, top, brickWidth, brickHeight, col, row, color, score, active));
         }
     }
