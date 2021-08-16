@@ -53,6 +53,17 @@ class Vector2d {
         return this;
     }
 
+    mult(length) {
+        this.x *= length;
+        this.y *= length;
+
+        return this;
+    }
+
+    static mult(vector, length) {
+        return vector.clone().mult(length);
+    }
+
     invertX() {
         this.x = -this.x;
         return this;

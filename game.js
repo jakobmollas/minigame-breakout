@@ -1,6 +1,9 @@
 'use strict'
 
-// Todo: use deltatime for calculations
+// Collision detection works pretty good for reasonable speeds, 
+// could be improved by doing multiple passes, 
+// splitting up movement vector into multiple smaller deltas and checking each one
+
 // Todo: add scoring - 1 point, 4 point, 7 points
 // todo: add live counter, decrease lives
 // Todo: remove bottom bounce when not needed, or hide with setting
@@ -26,15 +29,24 @@ let context;
 let height = 0;
 let width = 0;
 let mouseX = 0;
+
+// Todo: move to game state object?
 let bat;
 let ball;
-let ballVelocity;
-let score = 0;
-let gameOver = false;
-let running = false;
+let ballDirection;
+let score;
+let lives;
+let gameSpeed;
+let level;
+let numberOfHits;
+let topWallHasBeenHit;
+let topRowsHasBeenHit;
+let gameOver;
+let running;
 let bricks = [];
 
 let deltaTime = 0;
+let deltaTimeFactor = 0;
 let fps = 0;
 let lastTimestamp = 0;
 
@@ -56,6 +68,7 @@ window.onload = function () {
 
 function mainLoop() {
     deltaTime = lastTimestamp ? performance.now() - lastTimestamp : 0;
+    deltaTimeFactor = deltaTime > 0 ? 1 / deltaTime : 0;
     fps = deltaTime > 0 ? 1000 / deltaTime : 0;
 
     processGameLogic();
@@ -100,17 +113,17 @@ function moveBall() {
         return;
     }
 
-    ball.add(ballVelocity);
+    ball.add(Vector2d.mult(ballDirection, gameSpeed * deltaTimeFactor));
 }
 
 function checkBallToWallCollision() {
     if (ball.x < ballRadius || ball.x > width - ballRadius) {
-        ballVelocity.invertX();
+        ballDirection.invertX();
         ball.x = clamp(ball.x, ballRadius, width - ballRadius);
     }
 
     if (ball.y < ballRadius || ball.y > height - ballRadius) {
-        ballVelocity.invertY();
+        ballDirection.invertY();
         ball.y = clamp(ball.y, ballRadius, height - ballRadius);
     }
 }
@@ -124,15 +137,15 @@ function checkBallToBatCollision() {
         return;
     }
 
-    ballVelocity.invertY();
+    ballDirection.invertY();
     ball.y = bat.y - ballRadius;
 
     // let point of impact affect bounce direction
     let impactRotation = ((ball.x - bat.x) / batWidth - 0.5) * 4;
 
     // clamp to some min/max angles to avoid very shallow angles
-    let newHeading = clamp(ballVelocity.heading() + impactRotation, -Math.PI * 0.75, -Math.PI * 0.25);
-    ballVelocity.setHeading(newHeading);
+    let newHeading = clamp(ballDirection.heading() + impactRotation, -Math.PI * 0.75, -Math.PI * 0.25);
+    ballDirection.setHeading(newHeading);
 }
 
 function checkBallToBrickCollision() {
@@ -160,13 +173,13 @@ function checkBallToBrickCollision() {
         // edge case - if ball is exactly aligned with brick top, h1/h2 angle will be positive 0-PI, negate in that case
         h2 = ball.y === (brick.top - ballRadius) ? -h2 : h2;
 
-        let invertedBallHeading = ballVelocity.clone().invert().heading();
+        let invertedBallHeading = ballDirection.clone().invert().heading();
         if (isAngleBetween(invertedBallHeading, h1, h2) ||
             isAngleBetween(invertedBallHeading, h3, h4)) {
-            ballVelocity.invertY();
+            ballDirection.invertY();
         }
         else {
-            ballVelocity.invertX();
+            ballDirection.invertX();
         }
 
         brick.active = false;
@@ -280,10 +293,17 @@ function mouseDown(e) {
 function initialize() {
     bat = new Point2d(width / 2 - batWidth / 2, height - 2 * batHeight);
     ball = new Vector2d(bat.x + batWidth / 2, bat.y - ballRadius);
-    ballVelocity = new Vector2d(1, -1);
+    ballDirection = new Vector2d(1, -1);
     score = 0;
+    lives = 5;
+    gameSpeed = 50;
+    level = 1;
+    numberOfHits = 0;
+    topWallHasBeenHit = false;
+    topRowsHasBeenHit = false;
     gameOver = false;
     running = false;
+
     bricks = createBricks();
 }
 
