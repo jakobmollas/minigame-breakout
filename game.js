@@ -6,7 +6,6 @@
 // todo: add speed-up as per original game - 4/12 hits, orange/red row
 // todo: shrink bat to  1/2 size when hitting back wall
 // todo: 2 screens max, then game over
-// TODO: use mouse/touch to control bat instead of arrow keys - more precision/speed
 // todo: hide mouse pointer
 // Todo: Refactor
 
@@ -267,7 +266,7 @@ function keyDown(e) {
 }
 
 function mouseMove(e) {
-    mouseX = e.offsetX;
+    mouseX = e.clientX;
 }
 
 function initialize() {
