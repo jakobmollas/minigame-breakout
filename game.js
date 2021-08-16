@@ -6,6 +6,8 @@
 // todo: add speed-up as per original game - 4/12 hits, orange/red row
 // todo: shrink bat to  1/2 size when hitting back wall
 // todo: 2 screens max, then game over
+// TODO: use mouse/touch to control bat instead of arrow keys - more precision/speed
+// todo: hide mouse pointer
 // Todo: Refactor
 
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
@@ -26,17 +28,15 @@ let canvas;
 let context;
 let height = 0;
 let width = 0;
+let mouseX = 0;
 let bat;
 let ball;
 let ballVelocity;
 let batSpeed = 10;
 let score = 0;
 let gameOver = false;
-let leftPressed = false;
-let rightPressed = false;
 let bricks = [];
 
-// Todo: remove? use dev tools instead
 let deltaTime = 0;
 let fps = 0;
 let lastTimestamp = 0;
@@ -49,7 +49,7 @@ window.onload = function () {
     height = canvas.height;
 
     document.addEventListener("keydown", keyDown);
-    document.addEventListener("keyup", keyUp);
+    document.addEventListener("mousemove", mouseMove);
 
     initialize();
 
@@ -92,16 +92,8 @@ function render() {
 }
 
 function moveBat() {
-    let movementX = leftPressed ? -1 : 0;
-    movementX = rightPressed ? 1 : movementX;
-    bat.x += movementX * batSpeed;
-
-    if (bat.x < 0) {
-        bat.x = 0;
-    }
-    else if (bat.x + batWidth > width) {
-        bat.x = width - batWidth;
-    }
+    bat.x = mouseX;
+    bat.x = clamp(bat.x, 0, width - batWidth)
 }
 
 function moveBall() {
@@ -109,7 +101,7 @@ function moveBall() {
 }
 
 function checkBallToWallCollision() {
-    if (ball.x < 0 + ballRadius) {
+    if (ball.x < ballRadius) {
         ballVelocity.invertX();
         ball.x = ballRadius;
     }
@@ -118,7 +110,7 @@ function checkBallToWallCollision() {
         ball.x = width - ballRadius;
     }
 
-    if (ball.y < 0 + ballRadius) {
+    if (ball.y < ballRadius) {
         ballVelocity.invertY();
         ball.y = ballRadius;
     }
@@ -272,24 +264,10 @@ function keyDown(e) {
         initialize();
         return;
     }
-
-    handleArrowKeys(e, true);
 }
 
-function keyUp(e) {
-    handleArrowKeys(e, false);
-}
-
-function handleArrowKeys(e, isKeyDown) {
-    switch (e.keyCode) {
-        case 37:    // left arrow
-            leftPressed = isKeyDown;
-            break;
-
-        case 39:    // right arrow
-            rightPressed = isKeyDown;
-            break;
-    }
+function mouseMove(e) {
+    mouseX = e.offsetX;
 }
 
 function initialize() {
@@ -298,7 +276,6 @@ function initialize() {
     ballVelocity = new Vector2d(-4.133, -5);
     score = 0;
     gameOver = false;
-    leftPressed = rightPressed = false;
     bricks = createBricks();
 }
 
