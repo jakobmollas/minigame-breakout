@@ -31,13 +31,13 @@ class Vector2d {
     }
 
     mag() {
-        return Math.sqrt(this.x*this.x + this.y*this.y);
+        return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
     rotate(radians) {
         let newHeading = this.heading() + radians;
         return this.setHeading(newHeading);
-      };
+    };
 
     add(other) {
         this.x += other.x || 0;

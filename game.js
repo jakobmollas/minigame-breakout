@@ -10,8 +10,6 @@
 // Todo: Refactor
 
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
-// todo: add fast speed, for example holding ctrl?
-// Todo: do not launch ball until space (or smth) is pressed, allow bat movement
 // Todo: scale to device width? With max width? 
 // Todo: add support for mobile devices, for example tap to launch/restart, swipe to move etc.
 
@@ -101,7 +99,7 @@ function moveBall() {
         ball.y = bat.y - ballRadius;
         return;
     }
-    
+
     ball.add(ballVelocity);
 }
 
@@ -193,7 +191,7 @@ function drawBackground() {
 }
 
 function drawBricks() {
-    for (let brick of bricks.filter( b => b?.active)) {
+    for (let brick of bricks.filter(b => b?.active)) {
         context.fillStyle = brick.color;
         context.fillRect(brick.left, brick.top, brick.width - 1, brick.height - 1);
     }
@@ -264,7 +262,7 @@ function keyDown(e) {
         else {
             running = true;
         }
-        
+
         e.preventDefault();
     }
 }
