@@ -55,7 +55,7 @@ window.onload = function () {
 }
 
 function mainLoop() {
-    deltaTime = lastTimestamp != null ? performance.now() - lastTimestamp : 0;
+    deltaTime = lastTimestamp ? performance.now() - lastTimestamp : 0;
     fps = deltaTime > 0 ? 1000 / deltaTime : 0;
 
     processGameLogic();
@@ -155,12 +155,9 @@ function checkBallToBrickCollision() {
     bricksToCheck.push(getBrickAtColRow(bricks, c.x - 1, c.y));
     bricksToCheck.push(getBrickAtColRow(bricks, c.x + 1, c.y));
     bricksToCheck.push(getBrickAtColRow(bricks, c.x, c.y));
-    
-    for (let brick of bricksToCheck) {
-        if (!brick || !brick.active)
-            continue;
 
-        if (!intersects(ball, ballRadius, new Vector2d(brick.left, brick.top), brick.width, brick.height))
+    for (let brick of bricksToCheck.filter(b => b?.active)) {
+        if (!intersects(ball, ballRadius, new Point2d(brick.left, brick.top), brick.width, brick.height))
             continue;
 
         // divide brick into 4 angular sectors based on ball position and all 4 brick corners, taking ball radius into consideration
@@ -193,11 +190,11 @@ function getCellFromXY(ball) {
     let y = Math.floor(ball.y / brickHeight);
 
     return new Point2d(x, y);
-} 
+}
 
 function getBrickAtColRow(bricks, col, row) {
     return bricks[row * columns + col];
-} 
+}
 
 function drawBackground() {
     context.fillStyle = "#00000055";
@@ -205,14 +202,9 @@ function drawBackground() {
 }
 
 function drawBricks() {
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < columns; col++) {
-            let brick = bricks[row * columns + col];
-            context.fillStyle = getBrickColor(row);
-            if (brick.active) {
-                context.fillRect(col * brick.width, row * brickHeight, brickWidth - 1, brickHeight - 1);
-            }
-        }
+    for (let brick of bricks.filter( b => b?.active)) {
+        context.fillStyle = brick.color;
+        context.fillRect(brick.left, brick.top, brick.width - 1, brick.height - 1);
     }
 }
 
@@ -226,18 +218,6 @@ function drawBall() {
     context.beginPath();
     context.arc(ball.x, ball.y, 5, 0, 2 * Math.PI);
     context.fill();
-}
-
-function getBrickColor(rowNumber) {
-    switch (rowNumber) {
-        case 4: return "#D25444";
-        case 5: return "#D07137";
-        case 6: return "#BA7B2C";
-        case 7: return "#A49A26";
-        case 8: return "#439348";
-        case 9: return "#3F4FCE";
-        default: return "#3F4FCE";
-    }
 }
 
 function intersects(circle, radius, rectangle, rectWidth, rectHeight) {
@@ -332,12 +312,19 @@ function createBricks() {
         }
     }
 
-    // Todo: remove
-    // getBrickAtColRow(bricks, 4, 9).active = false;
-    // getBrickAtColRow(bricks, 3, 8).active = false;
-    // getBrickAtColRow(bricks, 4, 8).active = false;
-
     return bricks;
+}
+
+function getBrickColor(rowNumber) {
+    switch (rowNumber) {
+        case 4: return "#D25444";
+        case 5: return "#D07137";
+        case 6: return "#BA7B2C";
+        case 7: return "#A49A26";
+        case 8: return "#439348";
+        case 9: return "#3F4FCE";
+        default: return "#3F4FCE";
+    }
 }
 
 function clamp(value, min, max) {
