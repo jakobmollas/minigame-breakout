@@ -7,7 +7,6 @@
 // Todo: add scoring - 1 point, 4 point, 7 points
 // todo: add live counter, decrease lives
 // Todo: remove bottom bounce when not needed, or hide with setting
-// todo: add speed-up as per original game - 4/12 hits, orange/red row
 // todo: shrink bat to 1/2 size when hitting back wall
 // todo: 2 screens max, then game over
 // Todo: Refactor
@@ -89,6 +88,9 @@ function processGameLogic() {
     checkBallToWallCollision();
     checkBallToBatCollision();
     checkBallToBrickCollision();
+
+    handleSpeedUp();
+    handleBatSize();
 }
 
 function render() {
@@ -97,8 +99,8 @@ function render() {
     drawBat();
     drawBall();
 
-    drawScore(score);
-    drawGameOver(gameOver);
+    drawScore();
+    drawGameOver();
     drawFps();
 }
 
@@ -129,7 +131,7 @@ function checkBallToWallCollision() {
 }
 
 function checkBallToBatCollision() {
-    if (ball.y + ballRadius < bat.y) {
+    if (ball.y + ballRadius <= bat.y) {
         return;
     }
 
@@ -182,7 +184,10 @@ function checkBallToBrickCollision() {
             ballDirection.invertX();
         }
 
+        topRowsHasBeenHit = topRowsHasBeenHit || brick.row === 4 || brick.row === 5;
         brick.active = false;
+        numberOfHits++;
+
         break;
     }
 }
@@ -196,6 +201,22 @@ function getCellFromXY(ball) {
 
 function getBrickAtColRow(bricks, col, row) {
     return bricks[row * columns + col];
+}
+
+function handleSpeedUp() {
+    if (numberOfHits === 4 && gameSpeed < 65) {
+        gameSpeed = 65;
+    }
+    else if (numberOfHits === 12 && gameSpeed < 90) {
+        gameSpeed = 90;
+    }
+    else if (topRowsHasBeenHit && gameSpeed < 120) {
+        gameSpeed = 120;
+    }
+}
+
+function handleBatSize() {
+    // todo: implement
 }
 
 function drawBackground() {
@@ -246,12 +267,12 @@ function intersects(circle, radius, brick) {
     return cornerDistance_sq <= radius * radius;
 }
 
-function drawScore(score) {
+function drawScore() {
     let scoreBoard = document.getElementById("score");
-    scoreBoard.innerHTML = "Score: " + score;
+    scoreBoard.innerHTML = "Score: " + gameSpeed;
 }
 
-function drawGameOver(gameOver) {
+function drawGameOver() {
     if (!gameOver) {
         return;
     }
@@ -293,10 +314,10 @@ function mouseDown(e) {
 function initialize() {
     bat = new Point2d(width / 2 - batWidth / 2, height - 2 * batHeight);
     ball = new Vector2d(bat.x + batWidth / 2, bat.y - ballRadius);
-    ballDirection = new Vector2d(1, -1);
+    ballDirection = new Vector2d(0.7, -1);
     score = 0;
     lives = 5;
-    gameSpeed = 50;
+    gameSpeed = 40;
     level = 1;
     numberOfHits = 0;
     topWallHasBeenHit = false;
@@ -315,7 +336,7 @@ function createBricks() {
             let top = row * brickHeight;
             let color = getBrickColor(row);
             let active = row > 3;
-            bricks.push(new Brick(left, top, brickWidth, brickHeight, color, active));
+            bricks.push(new Brick(left, top, brickWidth, brickHeight, col, row, color, active));
         }
     }
 
