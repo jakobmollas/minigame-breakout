@@ -14,10 +14,9 @@
 // Todo: Only check brick collisions when reasonable, no need to check when above/belov brick area? Maybe check at current pos plus all bricks around that pos?
 
 const columns = 18;
-const rows = 6;
+const rows = 10;
 const brickWidth = 30;
 const brickHeight = 15;
-const topMargin = 4 * brickHeight;
 const batWidth = 3 * brickWidth;
 const batHeight = 0.5 * brickHeight;
 const ballRadius = 5;
@@ -140,7 +139,7 @@ function checkBallToBatCollision() {
     ballVelocity.invertY();
     ball.y = bat.y - ballRadius;
 
-    // let point of impact affect bounce
+    // let point of impact affect bounce direction
     let impactRotation = ((ball.x - bat.x) / batWidth - 0.5) * 4;
 
     // clamp to some min/max angles to avoid very shallow angles
@@ -150,66 +149,36 @@ function checkBallToBatCollision() {
 
 function checkBallToBrickCollision() {
     // Todo: Check brick at ball pos, then bricks above/below/left/right, then diagonal bricks, this will remove a few edge cases
-    // let bricksToCheck = new[];
-    // bricksToCheck.push(bricks[(row - 1) * columns + col - 1]);
-    // bricksToCheck.push(bricks[(row - 1) * columns + col + 1]);
-    // bricksToCheck.push(bricks[(row + 1) * columns + col - 1]);
-    // bricksToCheck.push(bricks[(row + 1) * columns + col + 1]);
-    // bricksToCheck.push(bricks[(row - 1) * columns + col]);
-    // bricksToCheck.push(bricks[(row + 1) * columns + col]);
-    // bricksToCheck.push(bricks[row * columns + col - 1]);
-    // bricksToCheck.push(bricks[row * columns + col + 1]);
-    // bricksToCheck.push(bricks[row * columns + col]);
 
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
             let brick = bricks[row * columns + col];
-            if (!brick.active) {
+            if (!brick.active)
                 continue;
+
+            if (!intersects(ball, ballRadius, new Vector2d(brick.left, brick.top), brickWidth, brickHeight))
+                continue;
+
+            // divide brick into 4 angular sectors based on ball position and all 4 brick corners, taking ball radius into consideration
+            // these are used to determine if the impact is vertical or horizontal
+            // vectors are calculated counter-clockwise starting at upper right corner
+            let h1 = new Vector2d(brick.right + ballRadius, brick.top - ballRadius).subtract(ball).heading();
+            let h2 = new Vector2d(brick.left - ballRadius, brick.top - ballRadius).subtract(ball).heading();
+            let h3 = new Vector2d(brick.left - ballRadius, brick.bottom + ballRadius).subtract(ball).heading();
+            let h4 = new Vector2d(brick.right + ballRadius, brick.bottom + ballRadius).subtract(ball).heading();
+
+            let invertedBallHeading = ballVelocity.clone().invert().heading();
+            if (isAngleBetween(invertedBallHeading, h1, h2) ||
+                isAngleBetween(invertedBallHeading, h3, h4)) {
+                ballVelocity.invertY();
+            }
+            else {
+                ballVelocity.invertX();
             }
 
-            // Todo: refactor
+            brick.active = false;
 
-            if (intersects(ball, ballRadius, new Vector2d(col * brickWidth, topMargin + row * brickHeight), brickWidth, brickHeight)) {
-                let cornerURx = (col + 1) * brickWidth + ballRadius;
-                let cornerURy = topMargin + row * brickHeight - ballRadius;
-                let cornerULx = col * brickWidth - ballRadius;
-                let cornerULy = topMargin + row * brickHeight - ballRadius;
-                let cornerLRx = (col + 1) * brickWidth + ballRadius;
-                let cornerLRy = topMargin + (row + 1) * brickHeight + ballRadius;
-                let cornerLLx = col * brickWidth - ballRadius;
-                let cornerLLy = topMargin + (row + 1) * brickHeight + ballRadius;
-
-                let v1 = new Vector2d(cornerURx, cornerURy);
-                v1.subtract(ball);
-                let h1 = v1.heading();
-
-                let v2 = new Vector2d(cornerULx, cornerULy);
-                v2.subtract(ball);
-                let h2 = v2.heading();
-
-                let v3 = new Vector2d(cornerLLx, cornerLLy);
-                v3.subtract(ball);
-                let h3 = v3.heading();
-
-                let v4 = new Vector2d(cornerLRx, cornerLRy);
-                v4.subtract(ball);
-                let h4 = v4.heading();
-
-                let invertedBallHeading = ballVelocity.clone().invert().heading();
-                if (isAngleBetween(invertedBallHeading, h1, h2) || isAngleBetween(invertedBallHeading, h3, h4)) {
-                    ballVelocity.invertY();
-                }
-                else {
-                    ballVelocity.invertX();
-                }
-                brick.active = false;
-
-
-
-
-                return;
-            }
+            return;
         }
     }
 }
@@ -225,7 +194,7 @@ function drawBricks() {
             let brick = bricks[row * columns + col];
             context.fillStyle = getBrickColor(row);
             if (brick.active) {
-                context.fillRect(col * brickWidth, row * brickHeight + topMargin, brickWidth - 1, brickHeight - 1);
+                context.fillRect(col * brickWidth, row * brickHeight, brickWidth - 1, brickHeight - 1);
             }
         }
     }
@@ -245,12 +214,13 @@ function drawBall() {
 
 function getBrickColor(rowNumber) {
     switch (rowNumber) {
-        case 0: return "#D25444";
-        case 1: return "#D07137";
-        case 2: return "#BA7B2C";
-        case 3: return "#A49A26";
-        case 4: return "#439348";
-        case 5: return "#3F4FCE";
+        case 4: return "#D25444";
+        case 5: return "#D07137";
+        case 6: return "#BA7B2C";
+        case 7: return "#A49A26";
+        case 8: return "#439348";
+        case 9: return "#3F4FCE";
+        default: return "#3F4FCE";
     }
 }
 
@@ -332,13 +302,22 @@ function initialize() {
     score = 0;
     gameOver = false;
     leftPressed = rightPressed = false;
-    bricks = [];
+    bricks = createBricks();
+}
 
+function createBricks() {
+    let bricks = [];
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
-            bricks.push({ active: true, color: row })
+            let left = col * brickWidth;
+            let top = row * brickHeight;
+            let color = getBrickColor(row);
+            let active = row > 3;
+            bricks.push(new Brick(left, top, brickWidth, brickHeight, color, active));
         }
     }
+
+    return bricks;
 }
 
 function clamp(value, min, max) {
