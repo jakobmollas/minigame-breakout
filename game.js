@@ -31,6 +31,7 @@ let context;
 let height = 0;
 let width = 0;
 let mouseX = 0;
+let gameTime = new GameTime();
 
 // Todo: move to game state object?
 let bat;
@@ -47,11 +48,6 @@ let topRowsHasBeenHit;
 let gameOver;
 let running;
 let bricks = [];
-
-let deltaTime = 0;
-let deltaTimeFactor = 0;
-let fps = 0;
-let lastTimestamp = 0;
 
 window.onload = function () {
     canvas = document.getElementById("game-canvas");
@@ -70,14 +66,11 @@ window.onload = function () {
 }
 
 function mainLoop() {
-    deltaTime = lastTimestamp ? performance.now() - lastTimestamp : 0;
-    deltaTimeFactor = deltaTime > 0 ? 1 / deltaTime : 0;
-    fps = deltaTime > 0 ? 1000 / deltaTime : 0;
+    gameTime.update();
 
     processGameLogic();
     render();
-
-    lastTimestamp = performance.now();
+    
     window.requestAnimationFrame(mainLoop);
 }
 
@@ -103,7 +96,7 @@ function render() {
     drawBat();
     drawBall();
 
-    drawScore();
+    drawStats();
     drawGameOver();
     drawFps();
 }
@@ -119,7 +112,7 @@ function moveBall() {
         return;
     }
 
-    ball.add(Vector2d.mult(ballDirection, gameSpeed * deltaTimeFactor));
+    ball.add(Vector2d.mult(ballDirection, gameSpeed * gameTime.deltaTimeFactor));
 }
 
 function checkBallToWallCollision() {
@@ -276,9 +269,9 @@ function intersects(circle, radius, brick) {
     return cornerDistance_sq <= radius * radius;
 }
 
-function drawScore() {
-    let scoreBoard = document.getElementById("score");
-    scoreBoard.innerHTML = "Score: " + score;
+function drawStats() {
+    let stats = document.getElementById("stats");
+    stats.innerHTML = "SCORE: " + score +  " LIVES: " + lives;
 }
 
 function drawGameOver() {
@@ -293,7 +286,7 @@ function drawGameOver() {
 
 function drawFps() {
     let stats = document.getElementById("fps");
-    stats.innerHTML = "FPS: " + fps.toFixed() + " (" + deltaTime.toFixed() + " ms)";
+    stats.innerHTML = "FPS: " + gameTime.fps.toFixed() + " (" + gameTime.deltaTime.toFixed() + " ms)";
 }
 
 function keyDown(e) {
