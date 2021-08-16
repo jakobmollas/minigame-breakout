@@ -4,11 +4,11 @@
 // could be improved by doing multiple passes, 
 // splitting up movement vector into multiple smaller deltas and checking each one
 
-// Todo: add scoring - 1 point, 4 point, 7 points
 // todo: add live counter, decrease lives
 // Todo: remove bottom bounce when not needed, or hide with setting
 // todo: shrink bat to 1/2 size when hitting back wall
 // todo: 2 screens max, then game over
+// todo: change ball color based on row
 // Todo: Refactor
 
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
@@ -185,8 +185,9 @@ function checkBallToBrickCollision() {
         }
 
         topRowsHasBeenHit = topRowsHasBeenHit || brick.row === 4 || brick.row === 5;
-        brick.active = false;
         numberOfHits++;
+        score += brick.score;
+        brick.active = false;
 
         break;
     }
@@ -269,7 +270,7 @@ function intersects(circle, radius, brick) {
 
 function drawScore() {
     let scoreBoard = document.getElementById("score");
-    scoreBoard.innerHTML = "Score: " + gameSpeed;
+    scoreBoard.innerHTML = "Score: " + score;
 }
 
 function drawGameOver() {
@@ -302,7 +303,7 @@ function keyDown(e) {
 }
 
 function mouseMove(e) {
-    mouseX = e.clientX;
+    mouseX = e.pageX;
     e.preventDefault();
 }
 
@@ -335,8 +336,9 @@ function createBricks() {
             let left = col * brickWidth;
             let top = row * brickHeight;
             let color = getBrickColor(row);
+            let score = getBrickScore(row);
             let active = row > 3;
-            bricks.push(new Brick(left, top, brickWidth, brickHeight, col, row, color, active));
+            bricks.push(new Brick(left, top, brickWidth, brickHeight, col, row, color, score, active));
         }
     }
 
@@ -352,6 +354,18 @@ function getBrickColor(rowNumber) {
         case 8: return "#439348";
         case 9: return "#3F4FCE";
         default: return "#3F4FCE";
+    }
+}
+
+function getBrickScore(rowNumber) {
+    switch (rowNumber) {
+        case 4:return 7;
+        case 5: return 7;
+        case 6:return 4;
+        case 7: return 4;
+        case 8:return 1;
+        case 9: return 1;
+        default: return 0;
     }
 }
 
