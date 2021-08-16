@@ -22,6 +22,10 @@ const brickHeight = 15;
 const batWidth = 3 * brickWidth;
 const batHeight = 0.5 * brickHeight;
 const ballRadius = 5;
+const speed1 = 40;
+const speed2 = 65;
+const speed3 = 90;
+const speed4 = 120;
 
 let canvas;
 let context;
@@ -205,14 +209,14 @@ function getBrickAtColRow(bricks, col, row) {
 }
 
 function handleSpeedUp() {
-    if (numberOfHits === 4 && gameSpeed < 65) {
-        gameSpeed = 65;
+    if (numberOfHits === 4 && gameSpeed < speed2) {
+        gameSpeed = speed2;
     }
-    else if (numberOfHits === 12 && gameSpeed < 90) {
-        gameSpeed = 90;
+    else if (numberOfHits === 12 && gameSpeed < speed3) {
+        gameSpeed = speed3;
     }
-    else if (topRowsHasBeenHit && gameSpeed < 120) {
-        gameSpeed = 120;
+    else if (topRowsHasBeenHit && gameSpeed < speed4) {
+        gameSpeed = speed4;
     }
 }
 
@@ -318,7 +322,7 @@ function initialize() {
     ballDirection = new Vector2d(0.7, -1);
     score = 0;
     lives = 5;
-    gameSpeed = 40;
+    gameSpeed = speed1;
     level = 1;
     numberOfHits = 0;
     topWallHasBeenHit = false;
