@@ -11,7 +11,6 @@
 // Todo: do not launch ball until space (or smth) is pressed, allow bat movement
 // Todo: scale to device width? With max width? 
 // Todo: add support for mobile devices, for example tap to launch/restart, swipe to move etc.
-// Todo: Only check brick collisions when reasonable, no need to check when above/belov brick area? Maybe check at current pos plus all bricks around that pos?
 
 const columns = 18;
 const rows = 10;
@@ -148,40 +147,57 @@ function checkBallToBatCollision() {
 }
 
 function checkBallToBrickCollision() {
-    // Todo: Check brick at ball pos, then bricks above/below/left/right, then diagonal bricks, this will remove a few edge cases
+    // Check brick at ball pos, then above/below/left/right
+    let bricksToCheck = [];
+    let c = getCellFromXY(ball);
+    bricksToCheck.push(getBrickAtColRow(bricks, c.x, c.y - 1));
+    bricksToCheck.push(getBrickAtColRow(bricks, c.x, c.y + 1));
+    bricksToCheck.push(getBrickAtColRow(bricks, c.x - 1, c.y));
+    bricksToCheck.push(getBrickAtColRow(bricks, c.x + 1, c.y));
+    bricksToCheck.push(getBrickAtColRow(bricks, c.x, c.y));
+    
+    for (let brick of bricksToCheck) {
+        if (!brick || !brick.active)
+            continue;
 
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < columns; col++) {
-            let brick = bricks[row * columns + col];
-            if (!brick.active)
-                continue;
+        if (!intersects(ball, ballRadius, new Vector2d(brick.left, brick.top), brick.width, brick.height))
+            continue;
 
-            if (!intersects(ball, ballRadius, new Vector2d(brick.left, brick.top), brickWidth, brickHeight))
-                continue;
+        // divide brick into 4 angular sectors based on ball position and all 4 brick corners, taking ball radius into consideration
+        // these are used to determine if the impact is vertical or horizontal
+        // vectors are calculated counter-clockwise starting at upper right corner
+        let h1 = new Vector2d(brick.right + ballRadius, brick.top - ballRadius).subtract(ball).heading();
+        let h2 = new Vector2d(brick.left - ballRadius, brick.top - ballRadius).subtract(ball).heading();
+        let h3 = new Vector2d(brick.left - ballRadius, brick.bottom + ballRadius).subtract(ball).heading();
+        let h4 = new Vector2d(brick.right + ballRadius, brick.bottom + ballRadius).subtract(ball).heading();
 
-            // divide brick into 4 angular sectors based on ball position and all 4 brick corners, taking ball radius into consideration
-            // these are used to determine if the impact is vertical or horizontal
-            // vectors are calculated counter-clockwise starting at upper right corner
-            let h1 = new Vector2d(brick.right + ballRadius, brick.top - ballRadius).subtract(ball).heading();
-            let h2 = new Vector2d(brick.left - ballRadius, brick.top - ballRadius).subtract(ball).heading();
-            let h3 = new Vector2d(brick.left - ballRadius, brick.bottom + ballRadius).subtract(ball).heading();
-            let h4 = new Vector2d(brick.right + ballRadius, brick.bottom + ballRadius).subtract(ball).heading();
+        // edge case - if ball is exactly aligned with brick top, h1/h2 angle will be positive 0-PI, negate in that case
+        h2 = ball.y === (brick.top - ballRadius) ? -h2 : h2;
 
-            let invertedBallHeading = ballVelocity.clone().invert().heading();
-            if (isAngleBetween(invertedBallHeading, h1, h2) ||
-                isAngleBetween(invertedBallHeading, h3, h4)) {
-                ballVelocity.invertY();
-            }
-            else {
-                ballVelocity.invertX();
-            }
-
-            brick.active = false;
-
-            return;
+        let invertedBallHeading = ballVelocity.clone().invert().heading();
+        if (isAngleBetween(invertedBallHeading, h1, h2) ||
+            isAngleBetween(invertedBallHeading, h3, h4)) {
+            ballVelocity.invertY();
         }
+        else {
+            ballVelocity.invertX();
+        }
+
+        brick.active = false;
+        break;
     }
 }
+
+function getCellFromXY(ball) {
+    let x = Math.floor(ball.x / brickWidth);
+    let y = Math.floor(ball.y / brickHeight);
+
+    return new Point2d(x, y);
+} 
+
+function getBrickAtColRow(bricks, col, row) {
+    return bricks[row * columns + col];
+} 
 
 function drawBackground() {
     context.fillStyle = "#00000055";
@@ -194,7 +210,7 @@ function drawBricks() {
             let brick = bricks[row * columns + col];
             context.fillStyle = getBrickColor(row);
             if (brick.active) {
-                context.fillRect(col * brickWidth, row * brickHeight, brickWidth - 1, brickHeight - 1);
+                context.fillRect(col * brick.width, row * brickHeight, brickWidth - 1, brickHeight - 1);
             }
         }
     }
@@ -265,8 +281,7 @@ function drawGameOver(gameOver) {
 
 function drawFps() {
     let stats = document.getElementById("fps");
-    stats.innerHTML = "Ball heading: " + ballVelocity.heading().toFixed(2);
-    //stats.innerHTML = "FPS: " + fps.toFixed() + " (" + deltaTime.toFixed() + " ms)";
+    stats.innerHTML = "FPS: " + fps.toFixed() + " (" + deltaTime.toFixed() + " ms)";
 }
 
 function keyDown(e) {
@@ -298,7 +313,7 @@ function handleArrowKeys(e, isKeyDown) {
 function initialize() {
     bat = new Vector2d(width / 2 - batWidth / 2, height - 2 * batHeight);
     ball = new Vector2d(bat.x + batWidth / 2, bat.y - ballRadius);
-    ballVelocity = new Vector2d(-3, -4.5);
+    ballVelocity = new Vector2d(-4.133, -5);
     score = 0;
     gameOver = false;
     leftPressed = rightPressed = false;
@@ -316,6 +331,11 @@ function createBricks() {
             bricks.push(new Brick(left, top, brickWidth, brickHeight, color, active));
         }
     }
+
+    // Todo: remove
+    // getBrickAtColRow(bricks, 4, 9).active = false;
+    // getBrickAtColRow(bricks, 3, 8).active = false;
+    // getBrickAtColRow(bricks, 4, 8).active = false;
 
     return bricks;
 }
