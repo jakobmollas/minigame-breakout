@@ -1,12 +1,14 @@
 'use strict'
 
 // Todo: use deltatime for calculations
-// Todo: add scoring
+// Todo: add scoring - 1 point, 4 point, 7 points
 // todo: add live counter, decrease lives
-// todo: add speed-up as per original game
-// Todo: Make canvas and all sizes dynamic, to support high dpi screens?
+// todo: add speed-up as per original game - 4/12 hits, orange/red row
+// todo: shrink bat to  1/2 size when hitting back wall
+// todo: 2 screens max, then game over
 // Todo: Refactor
 
+// Todo: Make canvas and all sizes dynamic, to support high dpi screens?
 // todo: add fast speed, for example holding ctrl?
 // Todo: do not launch ball until space (or smth) is pressed, allow bat movement
 // Todo: scale to device width? With max width? 
