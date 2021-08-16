@@ -3,10 +3,10 @@
 // Todo: use deltatime for calculations
 // Todo: add scoring - 1 point, 4 point, 7 points
 // todo: add live counter, decrease lives
+// Todo: remove bottom bounce when not needed, or hide with setting
 // todo: add speed-up as per original game - 4/12 hits, orange/red row
-// todo: shrink bat to  1/2 size when hitting back wall
+// todo: shrink bat to 1/2 size when hitting back wall
 // todo: 2 screens max, then game over
-// todo: hide mouse pointer
 // Todo: Refactor
 
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
@@ -31,7 +31,6 @@ let mouseX = 0;
 let bat;
 let ball;
 let ballVelocity;
-let batSpeed = 10;
 let score = 0;
 let gameOver = false;
 let bricks = [];
@@ -91,8 +90,7 @@ function render() {
 }
 
 function moveBat() {
-    bat.x = mouseX;
-    bat.x = clamp(bat.x, 0, width - batWidth)
+    bat.x = clamp(mouseX, 0, width - batWidth)
 }
 
 function moveBall() {
@@ -100,22 +98,14 @@ function moveBall() {
 }
 
 function checkBallToWallCollision() {
-    if (ball.x < ballRadius) {
+    if (ball.x < ballRadius || ball.x > width - ballRadius) {
         ballVelocity.invertX();
-        ball.x = ballRadius;
-    }
-    else if (ball.x > width - ballRadius) {
-        ballVelocity.invertX();
-        ball.x = width - ballRadius;
+        ball.x = clamp(ball.x, ballRadius, width - ballRadius);
     }
 
-    if (ball.y < ballRadius) {
+    if (ball.y < ballRadius || ball.y > height - ballRadius) {
         ballVelocity.invertY();
-        ball.y = ballRadius;
-    }
-    else if (ball.y > height - ballRadius) {
-        ballVelocity.invertY();
-        ball.y = height - ballRadius;
+        ball.y = clamp(ball.y, ballRadius, height - ballRadius);
     }
 }
 
@@ -150,7 +140,7 @@ function checkBallToBrickCollision() {
     bricksToCheck.push(getBrickAtColRow(bricks, c.x, c.y));
 
     for (let brick of bricksToCheck.filter(b => b?.active)) {
-        if (!intersects(ball, ballRadius, new Point2d(brick.left, brick.top), brick.width, brick.height))
+        if (!intersects(ball, ballRadius, brick))
             continue;
 
         // divide brick into 4 angular sectors based on ball position and all 4 brick corners, taking ball radius into consideration
@@ -213,12 +203,12 @@ function drawBall() {
     context.fill();
 }
 
-function intersects(circle, radius, rectangle, rectWidth, rectHeight) {
-    const halfWidth = rectWidth / 2;
-    const halfHeight = rectHeight / 2;
+function intersects(circle, radius, brick) {
+    const halfWidth = brick.width / 2;
+    const halfHeight = brick.height / 2;
 
-    let distX = Math.abs(circle.x - (rectangle.x + halfWidth));
-    let distY = Math.abs(circle.y - (rectangle.y + halfHeight));
+    let distX = Math.abs(circle.x - (brick.left + halfWidth));
+    let distY = Math.abs(circle.y - (brick.top + halfHeight));
 
     if (distX > (halfWidth + radius) ||
         distY > (halfHeight + radius)) {
@@ -272,7 +262,7 @@ function mouseMove(e) {
 function initialize() {
     bat = new Vector2d(width / 2 - batWidth / 2, height - 2 * batHeight);
     ball = new Vector2d(bat.x + batWidth / 2, bat.y - ballRadius);
-    ballVelocity = new Vector2d(-4.133, -5);
+    ballVelocity = new Vector2d(1, -1);
     score = 0;
     gameOver = false;
     bricks = createBricks();
