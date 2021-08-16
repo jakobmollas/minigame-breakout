@@ -242,7 +242,7 @@ function drawBat() {
 }
 
 function drawBall() {
-    context.fillStyle = "#D45345";
+    context.fillStyle = getBrickColor(getCellFromXY(ball).y);//"#D45345";
     context.beginPath();
     context.arc(ball.x, ball.y, 5, 0, 2 * Math.PI);
     context.fill();
@@ -357,7 +357,7 @@ function getBrickColor(rowNumber) {
         case 7: return "#A49A26";
         case 8: return "#439348";
         case 9: return "#3F4FCE";
-        default: return "#3F4FCE";
+        default: return "#D25444";
     }
 }
 
