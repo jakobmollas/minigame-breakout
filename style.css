@@ -3,9 +3,9 @@
     padding: 0;
     border: 0;
     color: #8E8E8E;
-    box-sizing: border-box;
-    font-family: 'consolas';
+    font-family: 'Press Start 2P', cursive;
     text-align: center;
+    line-height: 2rem;
     cursor: none;
 }
 
@@ -20,6 +20,17 @@ body {
 h1 {
     padding-top: 2rem;
     letter-spacing: 1rem;
+    font-size: 1.5rem;
+}
+
+h2 {
+    letter-spacing: 0.3em;
+    font-size: 1rem;
+}
+
+p {
+    font-size: 0.8rem;
+    line-height: 1.3rem;
 }
 
 #fps {
