@@ -33,6 +33,7 @@ let ball;
 let ballVelocity;
 let score = 0;
 let gameOver = false;
+let running = false;
 let bricks = [];
 
 let deltaTime = 0;
@@ -48,6 +49,7 @@ window.onload = function () {
 
     document.addEventListener("keydown", keyDown);
     document.addEventListener("mousemove", mouseMove);
+    document.addEventListener("mousedown", mouseDown);
 
     initialize();
 
@@ -94,6 +96,12 @@ function moveBat() {
 }
 
 function moveBall() {
+    if (!running) {
+        ball.x = bat.x + batWidth / 2;
+        ball.y = bat.y - ballRadius;
+        return;
+    }
+    
     ball.add(ballVelocity);
 }
 
@@ -249,22 +257,35 @@ function drawFps() {
 
 function keyDown(e) {
     // space
-    if (e.keyCode === 32 && gameOver) {
-        initialize();
-        return;
+    if (e.keyCode === 32) {
+        if (gameOver) {
+            initialize();
+        }
+        else {
+            running = true;
+        }
+        
+        e.preventDefault();
     }
 }
 
 function mouseMove(e) {
     mouseX = e.clientX;
+    e.preventDefault();
+}
+
+function mouseDown(e) {
+    running = true;
+    e.preventDefault();
 }
 
 function initialize() {
-    bat = new Vector2d(width / 2 - batWidth / 2, height - 2 * batHeight);
+    bat = new Point2d(width / 2 - batWidth / 2, height - 2 * batHeight);
     ball = new Vector2d(bat.x + batWidth / 2, bat.y - ballRadius);
     ballVelocity = new Vector2d(1, -1);
     score = 0;
     gameOver = false;
+    running = false;
     bricks = createBricks();
 }
 
