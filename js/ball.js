@@ -3,12 +3,12 @@
 class Ball {
     pos;
     #radius = 0;
-    direction;
+    #direction;
 
     constructor(x, y, radius, direction) {
         this.pos = new Vector2d(x, y);
         this.#radius = radius;
-        this.direction = direction;
+        this.#direction = direction;
     }
 
     get x() {
@@ -29,5 +29,25 @@ class Ball {
 
     get radius() {
         return this.#radius;
+    }
+
+    get heading() {
+        return this.#direction.heading;
+    }
+
+    move(distance) {
+        this.pos.add(Vector2d.mult(this.#direction, distance));
+    }
+
+    invertX() {
+        this.#direction.invertX();
+    }
+
+    invertY() {
+        this.#direction.invertY();
+    }
+
+    setHeading(heading) {
+        this.#direction.setHeading(heading);
     }
 }

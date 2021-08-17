@@ -34,8 +34,7 @@ class Vector2d {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
-    isHeadingBetween(angle1, angle2) {
-        const heading = this.heading;
+    static isHeadingBetween(heading, angle1, angle2) {
         return angle1 <= angle2
             ? angle2 - angle1 <= Math.PI
                 ? angle1 <= heading && heading <= angle2

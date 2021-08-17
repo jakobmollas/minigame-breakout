@@ -62,7 +62,7 @@ function mainLoop() {
 
     processGameLogic();
     render();
-    
+
     window.requestAnimationFrame(mainLoop);
 }
 
@@ -104,17 +104,17 @@ function moveBall() {
         return;
     }
 
-    ball.pos.add(Vector2d.mult(ball.direction, gameSpeed * gameTime.deltaTimeFactor));
+    ball.move(gameSpeed * gameTime.deltaTimeFactor);
 }
 
 function checkBallToWallCollision() {
     if (ball.x < ball.radius || ball.x > canvas.width - ball.radius) {
-        ball.direction.invertX();
+        ball.invertX();
         ball.x = clamp(ball.x, ball.radius, canvas.width - ball.radius);
     }
 
     if (ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
-        ball.direction.invertY();
+        ball.invertY();
         topWallHasBeenHit = ball.y < ball.radius;
 
         ball.y = clamp(ball.y, ball.radius, canvas.height - ball.radius);
@@ -130,15 +130,15 @@ function checkBallToBatCollision() {
         return;
     }
 
-    ball.direction.invertY();
+    ball.invertY();
     ball.y = bat.y - ball.radius;
 
     // let point of impact affect bounce direction
     let impactRotation = ((ball.x - bat.x) / bat.width - 0.5) * 4;
 
     // clamp to some min/max angles to avoid very shallow angles
-    let newHeading = clamp(ball.direction.heading + impactRotation, -Math.PI * 0.75, -Math.PI * 0.25);
-    ball.direction.setHeading(newHeading);
+    let newHeading = clamp(ball.heading + impactRotation, -Math.PI * 0.75, -Math.PI * 0.25);
+    ball.setHeading(newHeading);
 }
 
 function checkBallToBrickCollision() {
@@ -166,13 +166,13 @@ function checkBallToBrickCollision() {
         // edge case - if ball is exactly aligned with brick top, h1/h2 angle will be positive 0-PI, negate in that case
         h2 = ball.y === (brick.top - ball.radius) ? -h2 : h2;
 
-        let invertedBallDirection = ball.direction.clone().invert();
-        if (invertedBallDirection.isHeadingBetween(h1, h2) ||
-            invertedBallDirection.isHeadingBetween(h3, h4)) {
-                ball.direction.invertY();
+        let invertedBallHeading = Vector2d.fromAngle(ball.heading).invert().heading;
+        if (Vector2d.isHeadingBetween(invertedBallHeading, h1, h2) ||
+            Vector2d.isHeadingBetween(invertedBallHeading, h3, h4)) {
+            ball.invertY();
         }
         else {
-            ball.direction.invertX();
+            ball.invertX();
         }
 
         topRowsHasBeenHit = topRowsHasBeenHit || brick.row === 4 || brick.row === 5;
@@ -263,7 +263,7 @@ function drawBall() {
 
 function drawStats() {
     let stats = document.getElementById("stats");
-    stats.innerHTML = "SCORE: " + score +  " LIVES: " + lives;
+    stats.innerHTML = "SCORE: " + score + " LIVES: " + lives;
 }
 
 function drawGameOver() {
@@ -357,11 +357,11 @@ function getBrickColor(rowNumber) {
 
 function getBrickScore(rowNumber) {
     switch (rowNumber) {
-        case 4:return 7;
+        case 4: return 7;
         case 5: return 7;
-        case 6:return 4;
+        case 6: return 4;
         case 7: return 4;
-        case 8:return 1;
+        case 8: return 1;
         case 9: return 1;
         default: return 0;
     }
