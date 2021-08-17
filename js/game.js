@@ -17,13 +17,11 @@
 
 const columns = 18;
 const rows = 10;
-// Todo: do we need these?
+
 const brickWidth = 30;
 const brickHeight = 15;
-const batSmallWidth = 1.5 * brickWidth;
-const batLargeWidth = 3 * brickWidth;
-const batHeight = 0.5 * brickHeight;
-const speed1 = 150;
+
+const speed1 = 150; // pixels per second
 const speed2 = 210;
 const speed3 = 270;
 const speed4 = 360;
@@ -238,8 +236,8 @@ function handleSpeedUp() {
 }
 
 function handleBatSize() {
-    if (topWallHasBeenHit && bat.width > batSmallWidth) {
-        bat.width = batSmallWidth;
+    if (topWallHasBeenHit && !bat.isSmall) {
+        bat.makeSmall();
     }
 }
 
@@ -257,7 +255,7 @@ function drawBricks() {
 
 function drawBat() {
     context.fillStyle = "#D45345";
-    context.fillRect(bat.x, bat.y, bat.width, batHeight);
+    context.fillRect(bat.x, bat.y, bat.width, bat.height);
 }
 
 function drawBall() {
@@ -277,7 +275,7 @@ function drawGameOver() {
         return;
     }
 
-    context.font = "7rem consolas";
+    context.font = "7rem Press Start 2P";
     context.fillText("GAME", 70, 180);
     context.fillText("OVER", 70, 300);
 }
@@ -312,10 +310,12 @@ function mouseDown(e) {
 }
 
 function initialize() {
-    let ballRadius = 5;
-    let initialBallDirection = new Vector2d(0.7, -1);
+    const ballRadius = 5;
+    const initialBallDirection = new Vector2d(0.7, -1);
+    const batHeight = 0.5 * brickHeight;
+    const batInitialWidth = 3 * brickWidth;
 
-    bat = new Bat(width / 2 - batLargeWidth / 2, height - 2 * batHeight, batLargeWidth, batHeight);
+    bat = new Bat(width / 2 - batInitialWidth / 2, height - 2 * batHeight, batInitialWidth, batHeight);
     ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
 
     score = 0;
