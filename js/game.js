@@ -1,10 +1,5 @@
 'use strict'
 
-// todo: decrease lives
-// Todo: remove bottom bounce when not needed, or hide with setting
-// todo: 2 screens max, then game over
-// todo: add restart via touch
-
 // Maybe:
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
 // Todo: scale to device width? With max width? 
@@ -91,7 +86,6 @@ function render() {
 
     drawStats();
     drawGameOver();
-    drawFps();
 }
 
 function moveBat() {
@@ -312,48 +306,37 @@ function drawGameOver() {
         return;
     }
 
-    // Todo: improve this
-    context.fillStyle = "#8E8E8E";
-    context.font = "50px consolas";
+    context.font = "3rem 'Press Start 2P'";
     context.textAlign = "center";
     context.textBaseline = 'middle';
-    context.fillStyle = 'red';  // a color name or by using rgb/rgba/hex values
-//     var g = context.createLinearGradient(0,100,0,200);
 
-//   g.addColorStop("0","magenta");
-//   g.addColorStop("0.3","blue");
-//   g.addColorStop("1.0","red");
+    let x = canvas.width / 2;
+    let y = canvas.height / 1.5;
+    
+    var g = context.createLinearGradient(0, y - 15, 0, y + 15);
+    g.addColorStop("0", "#D25444");
+    g.addColorStop("0.2", "#D07137");
+    g.addColorStop("1.0", "#3F4FCE");
+    context.fillStyle = g;
 
-//   context.fillStyle=g; //Sets the fille of your text here. In this case it is set to the gradient that was created above. But you could set it to Red, Green, Blue or whatever.
-
-    context.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
-}
-
-function drawFps() {
-    let stats = document.getElementById("fps");
-    stats.innerHTML = "FPS: " + gameTime.fps.toFixed() + " (" + gameTime.deltaTime.toFixed() + " ms)";
+    context.fillText("GAME OVER", x, y);
 }
 
 function keyDown(e) {
     // space
     if (e.keyCode === 32) {
-        if (gameOver) {
-            initialize();
-        }
-        else {
-            running = true;
-        }
-
+        handleRestart();
         e.preventDefault();
     }
 }
 
-function touchMove(e) {
-    mouseX = e.touches.length > 0 ? e.touches[0].clientX : mouseX;
-}
 
 function touchEnd(e) {
-    running = true;
+    handleRestart();
+}
+
+function touchMove(e) {
+    mouseX = e.touches.length > 0 ? e.touches[0].clientX : mouseX;
 }
 
 function mouseMove(e) {
@@ -365,6 +348,15 @@ function mouseMove(e) {
 function mouseDown(e) {
     running = true;
     e.preventDefault();
+}
+
+function handleRestart() {
+    if (gameOver) {
+        initialize();
+    }
+    else {
+        running = true;
+    }
 }
 
 // Todo: refactor these
@@ -403,7 +395,7 @@ function levelUp() {
 function newBall() {
     const ballRadius = 5;
     const initialBallDirection = new Vector2d(0.7, -1);
-    
+
     ball.y = bat.y - ballRadius, ballRadius;
     ball.setHeading(initialBallDirection.heading);
     ball.topRowsHasBeenHit = false;
