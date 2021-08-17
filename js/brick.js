@@ -11,9 +11,10 @@ class Brick {
     #row = 0;
     #color = "";
     #score = 0;
+    #isTopRow = false;
     active = false;
 
-    constructor(left, top, width, height, column, row, color, score, active) {
+    constructor(left, top, width, height, column, row, color, score, isTopRow, active) {
         this.#left = left;
         this.#right = left + width;
         this.#top = top;
@@ -24,6 +25,7 @@ class Brick {
         this.#row = row;
         this.#color = color;
         this.#score = score;
+        this.#isTopRow = isTopRow;
         this.active = active;
     }
 
@@ -37,4 +39,5 @@ class Brick {
     get height() { return this.#height; }
     get color() { return this.#color; }
     get score() { return this.#score; }
+    get isTopRow() { return this.#isTopRow; }
 }

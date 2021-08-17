@@ -172,7 +172,7 @@ function checkBallToBrickCollision() {
             ball.invertX();
         }
 
-        ball.topRowsHasBeenHit = ball.topRowsHasBeenHit || brick.row === 4 || brick.row === 5;
+        ball.topRowsHasBeenHit = ball.topRowsHasBeenHit || brick.isTopRow;
         ball.numberOfBrickHits++;
         score += brick.score;
         brick.active = false;
@@ -214,6 +214,10 @@ function getCellFromXY(ball) {
 
 function getBrickAtColRow(bricks, col, row) {
     return bricks[row * columns + col];
+}
+
+function isTopRow(row) {
+    return row === 4 || row === 5;
 }
 
 function handleSpeedUp() {
@@ -329,8 +333,9 @@ function createBricks(rows, columns, brickWidth, brickHeight) {
             let top = row * brickHeight;
             let color = getBrickColor(row);
             let score = getBrickScore(row);
+            let isTopRow = row >= 4 && row <= 5;
             let active = row > 3;
-            bricks.push(new Brick(left, top, brickWidth, brickHeight, col, row, color, score, active));
+            bricks.push(new Brick(left, top, brickWidth, brickHeight, col, row, color, score, isTopRow, active));
         }
     }
 
