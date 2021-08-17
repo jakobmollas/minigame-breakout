@@ -7,6 +7,10 @@
 // Maybe:
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
 // Todo: scale to device width? With max width? 
+// todo: move rendering of components to components
+// todo: animate ball collisions, maybe blink om impact
+// todo: animate brick dissapearance, blink and fade out?
+// todo: make some transition effect on level up
 
 const columns = 18;
 const rows = 10;
@@ -329,6 +333,7 @@ function touchEnd(e) {
 }
 
 function mouseMove(e) {
+    // Todo: improve positioning, especially for touch
     mouseX = e.pageX;
     e.preventDefault();
 }
