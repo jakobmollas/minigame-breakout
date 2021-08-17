@@ -40,7 +40,6 @@ p {
 #game-canvas {
     display: block;
     margin: auto;
-    margin-top: 1rem;
     margin-bottom: 1rem;   
     border: 15px solid #8E8E8E;
     border-bottom: none;

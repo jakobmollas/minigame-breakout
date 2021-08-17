@@ -34,11 +34,8 @@ let bat;
 let ball;
 let score;
 let lives;
-let gameSpeed; // todo: move to ball class?
+let gameSpeed;
 let level;
-let numberOfHits;
-let topWallHasBeenHit;
-let topRowsHasBeenHit;
 let gameOver;
 let running;
 let bricks = [];
@@ -115,7 +112,7 @@ function checkBallToWallCollision() {
 
     if (ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
         ball.invertY();
-        topWallHasBeenHit = ball.y < ball.radius;
+        ball.topWallHasBeenHit = ball.topWallHasBeenHit || ball.y < ball.radius;
 
         ball.y = clamp(ball.y, ball.radius, canvas.height - ball.radius);
     }
@@ -175,8 +172,8 @@ function checkBallToBrickCollision() {
             ball.invertX();
         }
 
-        topRowsHasBeenHit = topRowsHasBeenHit || brick.row === 4 || brick.row === 5;
-        numberOfHits++;
+        ball.topRowsHasBeenHit = ball.topRowsHasBeenHit || brick.row === 4 || brick.row === 5;
+        ball.numberOfBrickHits++;
         score += brick.score;
         brick.active = false;
 
@@ -220,19 +217,19 @@ function getBrickAtColRow(bricks, col, row) {
 }
 
 function handleSpeedUp() {
-    if (numberOfHits === 4 && gameSpeed < speed2) {
+    if (ball.numberOfBrickHits === 4 && gameSpeed < speed2) {
         gameSpeed = speed2;
     }
-    else if (numberOfHits === 12 && gameSpeed < speed3) {
+    else if (ball.numberOfBrickHits === 12 && gameSpeed < speed3) {
         gameSpeed = speed3;
     }
-    else if (topRowsHasBeenHit && gameSpeed < speed4) {
+    else if (ball.topRowsHasBeenHit && gameSpeed < speed4) {
         gameSpeed = speed4;
     }
 }
 
 function handleBatSize() {
-    if (topWallHasBeenHit && !bat.isSmall) {
+    if (ball.topWallHasBeenHit && !bat.isSmall) {
         bat.makeSmall();
     }
 }
@@ -318,16 +315,13 @@ function initialize() {
     lives = 5;
     gameSpeed = speed1;
     level = 1;
-    numberOfHits = 0;
-    topWallHasBeenHit = false;
-    topRowsHasBeenHit = false;
     gameOver = false;
     running = false;
 
-    bricks = createBricks();
+    bricks = createBricks(rows, columns, brickWidth, brickHeight);
 }
 
-function createBricks() {
+function createBricks(rows, columns, brickWidth, brickHeight) {
     let bricks = [];
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {

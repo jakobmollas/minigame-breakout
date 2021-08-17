@@ -4,6 +4,9 @@ class Ball {
     pos;
     #radius = 0;
     #direction;
+    numberOfBrickHits = 0;
+    topWallHasBeenHit = false;
+    topRowsHasBeenHit = false;
 
     constructor(x, y, radius, direction) {
         this.pos = new Vector2d(x, y);
