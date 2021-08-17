@@ -28,9 +28,8 @@ const speed4 = 360;
 
 let canvas;
 let context;
-let height = 0;
-let width = 0;
 let mouseX = 0;
+
 let bat;
 let ball;
 let score;
@@ -48,9 +47,6 @@ let gameTime = new GameTime();
 window.onload = function () {
     canvas = document.getElementById("game-canvas");
     context = canvas.getContext("2d");
-
-    width = canvas.width;
-    height = canvas.height;
 
     document.addEventListener("keydown", keyDown);
     document.addEventListener("mousemove", mouseMove);
@@ -98,7 +94,7 @@ function render() {
 }
 
 function moveBat() {
-    bat.x = clamp(mouseX, 0, width - bat.width)
+    bat.x = clamp(mouseX, 0, canvas.width - bat.width)
 }
 
 function moveBall() {
@@ -112,16 +108,16 @@ function moveBall() {
 }
 
 function checkBallToWallCollision() {
-    if (ball.x < ball.radius || ball.x > width - ball.radius) {
+    if (ball.x < ball.radius || ball.x > canvas.width - ball.radius) {
         ball.direction.invertX();
-        ball.x = clamp(ball.x, ball.radius, width - ball.radius);
+        ball.x = clamp(ball.x, ball.radius, canvas.width - ball.radius);
     }
 
-    if (ball.y < ball.radius || ball.y > height - ball.radius) {
+    if (ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
         ball.direction.invertY();
         topWallHasBeenHit = ball.y < ball.radius;
 
-        ball.y = clamp(ball.y, ball.radius, height - ball.radius);
+        ball.y = clamp(ball.y, ball.radius, canvas.height - ball.radius);
     }
 }
 
@@ -315,7 +311,7 @@ function initialize() {
     const batHeight = 0.5 * brickHeight;
     const batInitialWidth = 3 * brickWidth;
 
-    bat = new Bat(width / 2 - batInitialWidth / 2, height - 2 * batHeight, batInitialWidth, batHeight);
+    bat = new Bat(canvas.width / 2 - batInitialWidth / 2, canvas.height - 2 * batHeight, batInitialWidth, batHeight);
     ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
 
     score = 0;
