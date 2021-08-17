@@ -39,7 +39,6 @@ window.onload = function () {
     canvas = document.getElementById("game-canvas");
     context = canvas.getContext("2d");
 
-    document.addEventListener("keydown", keyDown);
     document.addEventListener("touchmove", touchMove);
     document.addEventListener("touchend", touchEnd);
     document.addEventListener("mousemove", mouseMove);
@@ -243,10 +242,8 @@ function handleLostBall() {
         return;
     }
 
-    if (ball.isLost) {
-        if (--lives > 0) {
-            newBall();
-        }
+    if (ball.isLost && --lives > 0) {
+        newBall();
     }
 }
 
@@ -256,7 +253,7 @@ function handleLevelUp() {
     }
 
     let remainingBricks = bricks.filter(b => b.active).length;
-    if (level === 1 && remainingBricks <= 0) {
+    if (remainingBricks <= 0 && --level < 2) {
         levelUp();
     }
 }
@@ -312,7 +309,7 @@ function drawGameOver() {
 
     let x = canvas.width / 2;
     let y = canvas.height / 1.5;
-    
+
     var g = context.createLinearGradient(0, y - 15, 0, y + 15);
     g.addColorStop("0", "#D25444");
     g.addColorStop("0.2", "#D07137");
@@ -321,15 +318,6 @@ function drawGameOver() {
 
     context.fillText("GAME OVER", x, y);
 }
-
-function keyDown(e) {
-    // space
-    if (e.keyCode === 32) {
-        handleRestart();
-        e.preventDefault();
-    }
-}
-
 
 function touchEnd(e) {
     handleRestart();
@@ -340,13 +328,12 @@ function touchMove(e) {
 }
 
 function mouseMove(e) {
-    // Todo: improve positioning, especially for touch
-    mouseX = e.pageX;
+    mouseX = e.pageX - bat.width / 2;
     e.preventDefault();
 }
 
 function mouseDown(e) {
-    running = true;
+    handleRestart();
     e.preventDefault();
 }
 
@@ -380,24 +367,22 @@ function initialize() {
 }
 
 function levelUp() {
-    const ballRadius = 5;
-    const initialBallDirection = new Vector2d(0.7, -1);
+    // keep current state (speed, bat size etc) on level up
 
-    ball.y = bat.y - ballRadius, ballRadius;
-    ball.setHeading(initialBallDirection.heading);
+    ball.resetDirection();
+    ball.y = bat.y - ball.radius;
 
-    level++;
     running = false;
 
     bricks = createBricks(rows, columns, brickWidth, brickHeight);
 }
 
 function newBall() {
-    const ballRadius = 5;
-    const initialBallDirection = new Vector2d(0.7, -1);
+    bat.resetWidth();
 
-    ball.y = bat.y - ballRadius, ballRadius;
-    ball.setHeading(initialBallDirection.heading);
+    ball.resetDirection();
+    ball.x = bat.x + bat.Width / 2;
+    ball.y = bat.y - ball.radius;
     ball.topRowsHasBeenHit = false;
     ball.topWallHasBeenHit = false;
     ball.numberOfBrickHits = 0;

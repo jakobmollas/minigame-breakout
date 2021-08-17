@@ -1,34 +1,36 @@
 'use strict'
 
 class Ball {
-    pos;
+    #pos;
     #radius = 0;
     #direction;
+    #initialHeading;
     numberOfBrickHits = 0;
     topWallHasBeenHit = false;
     topRowsHasBeenHit = false;
     isLost = false;
 
     constructor(x, y, radius, direction) {
-        this.pos = new Vector2d(x, y);
+        this.#pos = new Vector2d(x, y);
         this.#radius = radius;
         this.#direction = direction;
+        this.#initialHeading = direction.heading;
     }
 
     get x() {
-        return this.pos.x;
+        return this.#pos.x;
     }
 
     set x(value) {
-        this.pos.x = value;
+        this.#pos.x = value;
     }
 
     get y() {
-        return this.pos.y;
+        return this.#pos.y;
     }
 
     set y(value) {
-        this.pos.y = value;
+        this.#pos.y = value;
     }
 
     get radius() {
@@ -40,7 +42,7 @@ class Ball {
     }
 
     move(distance) {
-        this.pos.add(Vector2d.mult(this.#direction, distance));
+        this.#pos.add(Vector2d.mult(this.#direction, distance));
     }
 
     invertX() {
@@ -53,5 +55,9 @@ class Ball {
 
     setHeading(heading) {
         this.#direction.setHeading(heading);
+    }
+
+    resetDirection() {
+        this.#direction.setHeading(this.#initialHeading);
     }
 }
