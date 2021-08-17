@@ -19,23 +19,34 @@ class Vector2d {
         return new Vector2d(this.x, this.y);
     }
 
-    heading() {
+    get heading() {
         return Math.atan2(this.y, this.x);
     }
 
     setHeading(radians) {
-        const magnitude = this.mag();
+        const magnitude = this.mag;
         this.x = Math.cos(radians) * magnitude;
         this.y = Math.sin(radians) * magnitude;
         return this;
     }
 
-    mag() {
+    get mag() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
+    isHeadingBetween(angle1, angle2) {
+        const heading = this.heading;
+        return angle1 <= angle2
+            ? angle2 - angle1 <= Math.PI
+                ? angle1 <= heading && heading <= angle2
+                : angle2 <= heading || heading <= angle1
+            : angle1 - angle2 <= Math.PI
+                ? angle2 <= heading && heading <= angle1
+                : angle1 <= heading || heading <= angle2;
+    }
+
     rotate(radians) {
-        let newHeading = this.heading() + radians;
+        const newHeading = this.heading() + radians;
         return this.setHeading(newHeading);
     };
 
