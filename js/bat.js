@@ -19,7 +19,7 @@ class Bat {
     }
 
     makeSmall() {
-        this.width /= 2;
+        this.width *= 2/3;
         this.#isSmall = true;
     }
 }

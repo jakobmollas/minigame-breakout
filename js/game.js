@@ -1,11 +1,10 @@
 'use strict'
 
-// todo: add life counter, decrease lives
+// todo: decrease lives
 // Todo: remove bottom bounce when not needed, or hide with setting
 // todo: 2 screens max, then game over
 
 // Maybe:
-// todo: add images and more discusison in readme
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
 // Todo: scale to device width? With max width? 
 
@@ -73,6 +72,8 @@ function processGameLogic() {
 
     handleSpeedUp();
     handleBatSize();
+    handleLevelUp();
+    handleGameOver();
 }
 
 function render() {
@@ -234,6 +235,33 @@ function handleBatSize() {
     }
 }
 
+function handleLevelUp() {
+    if (gameOver) {
+        return;
+    }
+
+    let remainingBricks = bricks.filter(b => b.active).length;
+    if (level === 1 && remainingBricks <= 100) {
+        levelUp();
+    }
+}
+
+function handleGameOver() {
+    if (gameOver) {
+        return;
+    }
+
+    let remainingBricks = bricks.filter(b => b.active).length;
+    if (lives <= 0 || (level >= 2 && remainingBricks <= 0)) {
+        gameOver = true;
+    }
+}
+
+function levelUp() {
+    level++;
+
+}
+
 function drawBackground() {
     context.fillStyle = "#00000055";
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -310,6 +338,7 @@ function mouseDown(e) {
     e.preventDefault();
 }
 
+// Todo: refactor
 function initialize() {
     const ballRadius = 5;
     const initialBallDirection = new Vector2d(0.7, -1);
@@ -327,6 +356,54 @@ function initialize() {
     running = false;
 
     bricks = createBricks(rows, columns, brickWidth, brickHeight);
+}
+
+function levelUp() {
+    const ballRadius = 5;
+    const initialBallDirection = new Vector2d(0.7, -1);
+
+    //bat = new Bat(canvas.width / 2 - batInitialWidth / 2, canvas.height - 2 * batHeight, batInitialWidth, batHeight);
+    //ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
+    bat.x = canvas.width / 2 - bat.width / 2;
+    
+    ball.x = bat.x + bat.Width / 2;
+    ball.y = bat.y - ballRadius, ballRadius;
+    ball.setHeading(initialBallDirection.heading);
+
+    // score = 0;
+    // lives = 5;
+    // gameSpeed = speed1;
+    // level = 1;
+    // gameOver = false;
+    level++;
+    running = false;
+
+    bricks = createBricks(rows, columns, brickWidth, brickHeight);
+}
+
+function newBall() {
+    const ballRadius = 5;
+    const initialBallDirection = new Vector2d(0.7, -1);
+
+    //bat = new Bat(canvas.width / 2 - batInitialWidth / 2, canvas.height - 2 * batHeight, batInitialWidth, batHeight);
+    //ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
+    bat.x = canvas.width / 2 - bat.width / 2;
+    
+    ball.x = bat.x + bat.Width / 2;
+    ball.y = bat.y - ballRadius, ballRadius;
+    ball.setHeading = initialBallDirection.heading;
+    ball.topRowsHasBeenHit = false;
+    ball.topWallHasBeenHit = false;
+    ball.numberOfBrickHits = 0;
+
+    // score = 0;
+    // lives = 5;
+    gameSpeed = speed1;
+    // level = 1;
+    // gameOver = false;
+    running = false;
+
+    //bricks = createBricks(rows, columns, brickWidth, brickHeight);
 }
 
 function createBricks(rows, columns, brickWidth, brickHeight) {
