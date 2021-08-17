@@ -7,6 +7,7 @@ class Ball {
     numberOfBrickHits = 0;
     topWallHasBeenHit = false;
     topRowsHasBeenHit = false;
+    isLost = false;
 
     constructor(x, y, radius, direction) {
         this.pos = new Vector2d(x, y);

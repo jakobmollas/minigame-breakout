@@ -3,6 +3,7 @@
 // todo: decrease lives
 // Todo: remove bottom bounce when not needed, or hide with setting
 // todo: 2 screens max, then game over
+// todo: add restart via touch
 
 // Maybe:
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
@@ -11,6 +12,7 @@
 // todo: animate ball collisions, maybe blink om impact
 // todo: animate brick dissapearance, blink and fade out?
 // todo: make some transition effect on level up
+// Todo: create css animation for header, color cycle if possible
 
 const columns = 18;
 const rows = 10;
@@ -76,6 +78,7 @@ function processGameLogic() {
 
     handleSpeedUp();
     handleBatSize();
+    handleLostBall();
     handleLevelUp();
     handleGameOver();
 }
@@ -111,11 +114,13 @@ function checkBallToWallCollision() {
         ball.x = clamp(ball.x, ball.radius, canvas.width - ball.radius);
     }
 
-    if (ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
+    if (ball.y < ball.radius) {
         ball.invertY();
-        ball.topWallHasBeenHit = ball.topWallHasBeenHit || ball.y < ball.radius;
-
-        ball.y = clamp(ball.y, ball.radius, canvas.height - ball.radius);
+        ball.y = ball.radius;
+        ball.topWallHasBeenHit = true;
+    }
+    else if (ball.y > canvas.height - ball.radius) {
+        ball.isLost = true;
     }
 }
 
@@ -239,13 +244,25 @@ function handleBatSize() {
     }
 }
 
+function handleLostBall() {
+    if (gameOver) {
+        return;
+    }
+
+    if (ball.isLost) {
+        if (--lives > 0) {
+            newBall();
+        }
+    }
+}
+
 function handleLevelUp() {
     if (gameOver) {
         return;
     }
 
     let remainingBricks = bricks.filter(b => b.active).length;
-    if (level === 1 && remainingBricks <= 100) {
+    if (level === 1 && remainingBricks <= 0) {
         levelUp();
     }
 }
@@ -259,11 +276,6 @@ function handleGameOver() {
     if (lives <= 0 || (level >= 2 && remainingBricks <= 0)) {
         gameOver = true;
     }
-}
-
-function levelUp() {
-    level++;
-
 }
 
 function drawBackground() {
@@ -300,9 +312,21 @@ function drawGameOver() {
         return;
     }
 
-    context.font = "7rem Press Start 2P";
-    context.fillText("GAME", 70, 180);
-    context.fillText("OVER", 70, 300);
+    // Todo: improve this
+    context.fillStyle = "#8E8E8E";
+    context.font = "50px consolas";
+    context.textAlign = "center";
+    context.textBaseline = 'middle';
+    context.fillStyle = 'red';  // a color name or by using rgb/rgba/hex values
+//     var g = context.createLinearGradient(0,100,0,200);
+
+//   g.addColorStop("0","magenta");
+//   g.addColorStop("0.3","blue");
+//   g.addColorStop("1.0","red");
+
+//   context.fillStyle=g; //Sets the fille of your text here. In this case it is set to the gradient that was created above. But you could set it to Red, Green, Blue or whatever.
+
+    context.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
 }
 
 function drawFps() {
@@ -343,7 +367,7 @@ function mouseDown(e) {
     e.preventDefault();
 }
 
-// Todo: refactor
+// Todo: refactor these
 function initialize() {
     const ballRadius = 5;
     const initialBallDirection = new Vector2d(0.7, -1);
@@ -367,19 +391,9 @@ function levelUp() {
     const ballRadius = 5;
     const initialBallDirection = new Vector2d(0.7, -1);
 
-    //bat = new Bat(canvas.width / 2 - batInitialWidth / 2, canvas.height - 2 * batHeight, batInitialWidth, batHeight);
-    //ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
-    bat.x = canvas.width / 2 - bat.width / 2;
-    
-    ball.x = bat.x + bat.Width / 2;
     ball.y = bat.y - ballRadius, ballRadius;
     ball.setHeading(initialBallDirection.heading);
 
-    // score = 0;
-    // lives = 5;
-    // gameSpeed = speed1;
-    // level = 1;
-    // gameOver = false;
     level++;
     running = false;
 
@@ -389,26 +403,16 @@ function levelUp() {
 function newBall() {
     const ballRadius = 5;
     const initialBallDirection = new Vector2d(0.7, -1);
-
-    //bat = new Bat(canvas.width / 2 - batInitialWidth / 2, canvas.height - 2 * batHeight, batInitialWidth, batHeight);
-    //ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
-    bat.x = canvas.width / 2 - bat.width / 2;
     
-    ball.x = bat.x + bat.Width / 2;
     ball.y = bat.y - ballRadius, ballRadius;
-    ball.setHeading = initialBallDirection.heading;
+    ball.setHeading(initialBallDirection.heading);
     ball.topRowsHasBeenHit = false;
     ball.topWallHasBeenHit = false;
     ball.numberOfBrickHits = 0;
+    ball.isLost = false;
 
-    // score = 0;
-    // lives = 5;
     gameSpeed = speed1;
-    // level = 1;
-    // gameOver = false;
     running = false;
-
-    //bricks = createBricks(rows, columns, brickWidth, brickHeight);
 }
 
 function createBricks(rows, columns, brickWidth, brickHeight) {
