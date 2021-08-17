@@ -1,9 +1,5 @@
 'use strict'
 
-// Collision detection works pretty good for reasonable speeds, 
-// could be improved by doing multiple passes, 
-// splitting up movement vector into multiple smaller deltas and checking each one
-
 // todo: add life counter, decrease lives
 // Todo: remove bottom bounce when not needed, or hide with setting
 // todo: 2 screens max, then game over
@@ -12,7 +8,6 @@
 // todo: add images and more discusison in readme
 // Todo: Make canvas and all sizes dynamic, to support high dpi screens?
 // Todo: scale to device width? With max width? 
-// Todo: add support for mobile devices, for example tap to launch/restart, swipe to move etc.
 
 const columns = 18;
 const rows = 10;
@@ -46,6 +41,7 @@ window.onload = function () {
 
     document.addEventListener("keydown", keyDown);
     document.addEventListener("touchmove", touchMove);
+    document.addEventListener("touchend", touchEnd);
     document.addEventListener("mousemove", mouseMove);
     document.addEventListener("mousedown", mouseDown);
 
@@ -298,6 +294,10 @@ function keyDown(e) {
 
 function touchMove(e) {
     mouseX = e.touches.length > 0 ? e.touches[0].clientX : mouseX;
+}
+
+function touchEnd(e) {
+    running = true;
 }
 
 function mouseMove(e) {
