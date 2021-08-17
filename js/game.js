@@ -7,7 +7,6 @@
 // todo: add life counter, decrease lives
 // Todo: remove bottom bounce when not needed, or hide with setting
 // todo: 2 screens max, then game over
-// Todo: Refactor
 
 // Maybe:
 // todo: add images and more discusison in readme
@@ -46,6 +45,7 @@ window.onload = function () {
     context = canvas.getContext("2d");
 
     document.addEventListener("keydown", keyDown);
+    document.addEventListener("touchmove", touchMove);
     document.addEventListener("mousemove", mouseMove);
     document.addEventListener("mousedown", mouseDown);
 
@@ -294,6 +294,10 @@ function keyDown(e) {
 
         e.preventDefault();
     }
+}
+
+function touchMove(e) {
+    mouseX = e.touches.length > 0 ? e.touches[0].clientX : mouseX;
 }
 
 function mouseMove(e) {
