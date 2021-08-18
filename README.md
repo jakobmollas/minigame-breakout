@@ -7,7 +7,7 @@ Link: https://jakobmollas.github.io/minigame-breakout/
 Implemented using Html5 Canvas, some Html/Css and pure Javascript.
 
 * Use mouse/touch to move bat
-* Mouse click/touch end to launch ball
+* Mouse click/touch to launch ball/restart etc.
 * 2 screens/levels as per original, max score 864
 
 Using a library like **P5.js** would simplify a lot of things but I wanted to see how hard it would be to work with vanilla js + canvas only, which was pretty straight-forward, at least for this game.
