@@ -6,8 +6,6 @@
 // todo: move rendering of components to components
 // todo: animate ball collisions, maybe blink om impact
 // todo: animate brick disappearance, blink and fade out?
-// todo: make some transition effect on level up
-// Todo: create css animation for header, color cycle if possible
 
 const columns = 18;
 const rows = 10;
@@ -215,21 +213,22 @@ function handleBatSize() {
 }
 
 function handleBallLost() {
-    if (ball.isLost && lives > 0) {
+    if (ball.isLost) {
         state = GameState.BALL_LOST;
     }
 }
 
 function handleLevelUp() {
     let remainingBricks = bricks.filter(b => b.active).length;
-    if (remainingBricks <= 107 && level < 2) {
+    if (level < 2 && remainingBricks <= 0) {
         state = GameState.LEVEL_UP;
     }
 }
 
 function handleGameOver() {
     let remainingBricks = bricks.filter(b => b.active).length;
-    if (lives <= 0 || (level >= 2 && remainingBricks <= 100)) {
+    if ((lives <= 1 && state === GameState.BALL_LOST) ||
+        (level >= 2 && remainingBricks <= 0)) {
         state = GameState.GAME_OVER;
     }
 }
