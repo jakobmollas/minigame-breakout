@@ -5,7 +5,7 @@
     color: #8E8E8E;
     font-family: 'Press Start 2P';
     text-align: center;
-    line-height: 2rem;
+    line-height: 1.5rem;
     cursor: none;
 }
 
@@ -18,29 +18,26 @@ body {
 }
 
 h1 {
-    padding-top: 2rem;
+    padding-top: 0.5rem;
     letter-spacing: 1rem;
     font-size: 1.2rem;
 }
 
 h2 {
-    letter-spacing: 0.3em;
+    letter-spacing: 0.5em;
     font-size: 0.8rem;
 }
 
 p {
     font-size: 0.7rem;
-    line-height: 1.3rem;
-}
-
-#fps {
-    text-align: right;
+    line-height: 1.2rem;
 }
 
 #game-canvas {
     display: block;
     margin: auto;
-    margin-bottom: 1rem;   
-    border: 15px solid #8E8E8E;
+    margin-bottom: 0.5rem;   
+    border: 0.5rem solid #8E8E8E;
     border-bottom: none;
+    width: 90%;
 }

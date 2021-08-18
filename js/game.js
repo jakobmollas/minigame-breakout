@@ -1,12 +1,5 @@
 'use strict'
 
-// Maybe:
-// Todo: Make canvas and all sizes dynamic, to support high dpi screens?
-// Todo: scale to device width? With max width? 
-// todo: move rendering of components to components
-// todo: animate ball collisions, maybe blink om impact
-// todo: animate brick disappearance, blink and fade out?
-
 const columns = 18;
 const rows = 10;
 
@@ -20,8 +13,9 @@ const speed4 = 360;
 
 const GameState = { "LAUNCHING": 0, "RUNNING": 1, "LEVEL_UP": 2, "BALL_LOST": 3, "GAME_OVER": 4 };
 
-let canvas;
 let context;
+let width = 0;
+let height = 0;
 let inputCenterX = 0;
 
 let bat;
@@ -34,10 +28,8 @@ let bricks = [];
 let gameTime = new GameTime();
 let state = GameState.LAUNCHING;
 
-
 window.onload = function () {
-    canvas = document.getElementById("game-canvas");
-    context = canvas.getContext("2d");
+    context = setupCanvasContext();
 
     document.addEventListener("touchmove", touchMove);
     document.addEventListener("touchend", touchEnd);
@@ -47,6 +39,23 @@ window.onload = function () {
     startNewGame();
 
     window.requestAnimationFrame(mainLoop);
+}
+
+function setupCanvasContext() {
+    let canvas = document.getElementById("game-canvas");
+
+    width = canvas.width;
+    height = canvas.height;
+
+    let dpr = 1 / (window.devicePixelRatio || 1);
+    canvas.width = canvas.width * dpr;
+    canvas.height = canvas.height * dpr;
+
+    // Scale drawing context to match dpr
+    let context = canvas.getContext('2d');
+    context.scale(dpr, dpr);
+
+    return context;
 }
 
 function mainLoop() {
@@ -101,7 +110,7 @@ function render() {
 }
 
 function moveBat() {
-    bat.x = clamp(inputCenterX - bat.width / 2, 0, canvas.width - bat.width)
+    bat.x = clamp(inputCenterX - bat.width / 2, 0, width - bat.width)
 }
 
 function moveBall() {
@@ -116,9 +125,9 @@ function moveBall() {
 }
 
 function checkBallToWallCollision() {
-    if (ball.x < ball.radius || ball.x > canvas.width - ball.radius) {
+    if (ball.x < ball.radius || ball.x > width - ball.radius) {
         ball.invertX();
-        ball.x = clamp(ball.x, ball.radius, canvas.width - ball.radius);
+        ball.x = clamp(ball.x, ball.radius, width - ball.radius);
     }
 
     if (ball.y < ball.radius) {
@@ -126,7 +135,7 @@ function checkBallToWallCollision() {
         ball.y = ball.radius;
         ball.topWallHasBeenHit = true;
     }
-    else if (ball.y > canvas.height - ball.radius) {
+    else if (ball.y > height - ball.radius) {
         ball.isLost = true;
     }
 }
@@ -235,7 +244,7 @@ function handleGameOver() {
 
 function drawBackground() {
     context.fillStyle = "#00000055";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillRect(0, 0, width, height);
 }
 
 function drawBricks() {
@@ -279,8 +288,8 @@ function drawOverlay(text) {
     context.textAlign = "center";
     context.textBaseline = 'middle';
 
-    let x = canvas.width / 2;
-    let y = canvas.height / 1.5;
+    let x = width / 2;
+    let y = height / 1.5;
 
     var g = context.createLinearGradient(0, y - 15, 0, y + 15);
     g.addColorStop("0", "#D25444");
@@ -298,12 +307,12 @@ function touchEnd(e) {
 
 function touchMove(e) {
     let xPos = e.changedTouches[0]?.pageX ?? 0;
-    inputCenterX = map(xPos, 0, window.innerWidth, 0, canvas.width);
+    inputCenterX = map(xPos, 0, window.innerWidth, 0, width);
 }
 
 function mouseMove(e) {
     e.preventDefault();
-    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, canvas.width);
+    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, width);
 }
 
 function mouseDown(e) {
@@ -337,7 +346,7 @@ function startNewGame() {
     const batHeight = 0.5 * brickHeight;
     const batInitialWidth = 3 * brickWidth;
 
-    bat = new Bat(canvas.width / 2 - batInitialWidth / 2, canvas.height - 2 * batHeight, batInitialWidth, batHeight);
+    bat = new Bat(width / 2 - batInitialWidth / 2, height - 2 * batHeight, batInitialWidth, batHeight);
     ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
     bricks = createBricks(rows, columns, brickWidth, brickHeight);
 
