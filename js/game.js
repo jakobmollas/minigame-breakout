@@ -291,27 +291,24 @@ function drawOverlay(text) {
     context.fillText(text, x, y);
 }
 
-
 function touchEnd(e) {
+    e.preventDefault();
     handleRestart();
 }
 
 function touchMove(e) {
-    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, canvas.width);
+    let xPos = e.changedTouches[0]?.pageX ?? 0;
+    inputCenterX = map(xPos, 0, window.innerWidth, 0, canvas.width);
 }
 
 function mouseMove(e) {
-    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, canvas.width);
     e.preventDefault();
-}
-
-function map(value, inputMin, inputMax, outputMin, outputMax) {
-    return (value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin;
+    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, canvas.width);
 }
 
 function mouseDown(e) {
-    handleRestart();
     e.preventDefault();
+    handleRestart();
 }
 
 function handleRestart() {
@@ -459,4 +456,8 @@ function clamp(value, min, max) {
     if (value > max) return max;
     if (value < min) return min;
     return value;
+}
+
+function map(value, inputMin, inputMax, outputMin, outputMax) {
+    return (value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin;
 }
