@@ -5,7 +5,7 @@
 // Todo: scale to device width? With max width? 
 // todo: move rendering of components to components
 // todo: animate ball collisions, maybe blink om impact
-// todo: animate brick dissapearance, blink and fade out?
+// todo: animate brick disappearance, blink and fade out?
 // todo: make some transition effect on level up
 // Todo: create css animation for header, color cycle if possible
 
@@ -20,6 +20,8 @@ const speed2 = 210;
 const speed3 = 270;
 const speed4 = 360;
 
+const GameState = { "LAUNCHING": 0, "RUNNING": 1, "LEVEL_UP": 2, "BALL_LOST": 3, "GAME_OVER": 4 };
+
 let canvas;
 let context;
 let inputCenterX = 0;
@@ -30,10 +32,10 @@ let score;
 let lives;
 let gameSpeed;
 let level;
-let gameOver;
-let running;
 let bricks = [];
 let gameTime = new GameTime();
+let state = GameState.LAUNCHING;
+
 
 window.onload = function () {
     canvas = document.getElementById("game-canvas");
@@ -44,7 +46,7 @@ window.onload = function () {
     document.addEventListener("mousemove", mouseMove);
     document.addEventListener("mousedown", mouseDown);
 
-    initialize();
+    startNewGame();
 
     window.requestAnimationFrame(mainLoop);
 }
@@ -59,22 +61,22 @@ function mainLoop() {
 }
 
 function processGameLogic() {
-    if (gameOver) {
-        return;
+    if (state === GameState.LAUNCHING || state === GameState.RUNNING) {
+        moveBat();
+        moveBall();
     }
 
-    moveBat();
-    moveBall();
+    if (state === GameState.RUNNING) {
+        checkBallToWallCollision();
+        checkBallToBatCollision();
+        checkBallToBrickCollision();
 
-    checkBallToWallCollision();
-    checkBallToBatCollision();
-    checkBallToBrickCollision();
-
-    handleSpeedUp();
-    handleBatSize();
-    handleLostBall();
-    handleLevelUp();
-    handleGameOver();
+        handleSpeedUp();
+        handleBatSize();
+        handleBallLost();
+        handleLevelUp();
+        handleGameOver();
+    }
 }
 
 function render() {
@@ -83,8 +85,21 @@ function render() {
     drawBat();
     drawBall();
 
-    drawStats();
-    drawGameOver();
+    drawGameStats();
+
+    switch (state) {
+        case GameState.LEVEL_UP:
+            drawLevelUp();
+            break;
+
+        case GameState.BALL_LOST:
+            drawBallLost();
+            break;
+
+        case GameState.GAME_OVER:
+            drawGameOver();
+            break;
+    }
 }
 
 function moveBat() {
@@ -92,7 +107,8 @@ function moveBat() {
 }
 
 function moveBall() {
-    if (!running) {
+    if (state !== GameState.RUNNING) {
+        // Follow bat
         ball.x = bat.x + bat.width / 2;
         ball.y = bat.y - ball.radius;
         return;
@@ -180,45 +196,6 @@ function checkBallToBrickCollision() {
     }
 }
 
-function intersects(ball, radius, brick) {
-    const halfWidth = brick.width / 2;
-    const halfHeight = brick.height / 2;
-
-    let distX = Math.abs(ball.x - (brick.left + halfWidth));
-    let distY = Math.abs(ball.y - (brick.top + halfHeight));
-
-    if (distX > (halfWidth + radius) ||
-        distY > (halfHeight + radius)) {
-        return false;
-    }
-
-    if (distX <= (halfWidth + radius) ||
-        distY <= (halfHeight + radius)) {
-        return true;
-    }
-
-    let cornerDistance_sq =
-        Math.pow((distX - halfWidth), 2) +
-        Math.pow((distY - halfHeight), 2);
-
-    return cornerDistance_sq <= radius * radius;
-}
-
-function getCellFromXY(ball) {
-    let x = Math.floor(ball.x / brickWidth);
-    let y = Math.floor(ball.y / brickHeight);
-
-    return new Point2d(x, y);
-}
-
-function getBrickAtColRow(bricks, col, row) {
-    return bricks[row * columns + col];
-}
-
-function isTopRow(row) {
-    return row === 4 || row === 5;
-}
-
 function handleSpeedUp() {
     if (ball.numberOfBrickHits === 4 && gameSpeed < speed2) {
         gameSpeed = speed2;
@@ -237,35 +214,23 @@ function handleBatSize() {
     }
 }
 
-function handleLostBall() {
-    if (gameOver) {
-        return;
-    }
-
-    if (ball.isLost && --lives > 0) {
-        newBall();
+function handleBallLost() {
+    if (ball.isLost && lives > 0) {
+        state = GameState.BALL_LOST;
     }
 }
 
 function handleLevelUp() {
-    if (gameOver) {
-        return;
-    }
-
     let remainingBricks = bricks.filter(b => b.active).length;
-    if (remainingBricks <= 0 && --level < 2) {
-        levelUp();
+    if (remainingBricks <= 107 && level < 2) {
+        state = GameState.LEVEL_UP;
     }
 }
 
 function handleGameOver() {
-    if (gameOver) {
-        return;
-    }
-
     let remainingBricks = bricks.filter(b => b.active).length;
-    if (lives <= 0 || (level >= 2 && remainingBricks <= 0)) {
-        gameOver = true;
+    if (lives <= 0 || (level >= 2 && remainingBricks <= 100)) {
+        state = GameState.GAME_OVER;
     }
 }
 
@@ -293,16 +258,24 @@ function drawBall() {
     context.fill();
 }
 
-function drawStats() {
+function drawGameStats() {
     let stats = document.getElementById("stats");
     stats.innerHTML = "SCORE: " + score + " LIVES: " + lives;
 }
 
-function drawGameOver() {
-    if (!gameOver) {
-        return;
-    }
+function drawLevelUp() {
+    drawOverlay("LEVEL UP");
+}
 
+function drawBallLost() {
+    drawOverlay("BALL LOST");
+}
+
+function drawGameOver() {
+    drawOverlay("GAME OVER");
+}
+
+function drawOverlay(text) {
     context.font = "3rem 'Press Start 2P'";
     context.textAlign = "center";
     context.textBaseline = 'middle';
@@ -316,8 +289,9 @@ function drawGameOver() {
     g.addColorStop("1.0", "#3F4FCE");
     context.fillStyle = g;
 
-    context.fillText("GAME OVER", x, y);
+    context.fillText(text, x, y);
 }
+
 
 function touchEnd(e) {
     handleRestart();
@@ -342,16 +316,26 @@ function mouseDown(e) {
 }
 
 function handleRestart() {
-    if (gameOver) {
-        initialize();
-    }
-    else {
-        running = true;
+    switch (state) {
+        case GameState.LAUNCHING:
+            state = GameState.RUNNING;
+            break;
+
+        case GameState.LEVEL_UP:
+            levelUp();
+            break;
+
+        case GameState.BALL_LOST:
+            newBall();
+            break;
+
+        case GameState.GAME_OVER:
+            startNewGame();
+            return;
     }
 }
 
-// Todo: refactor these
-function initialize() {
+function startNewGame() {
     const ballRadius = 5;
     const initialBallDirection = new Vector2d(0.7, -1);
     const batHeight = 0.5 * brickHeight;
@@ -359,26 +343,25 @@ function initialize() {
 
     bat = new Bat(canvas.width / 2 - batInitialWidth / 2, canvas.height - 2 * batHeight, batInitialWidth, batHeight);
     ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
+    bricks = createBricks(rows, columns, brickWidth, brickHeight);
 
     score = 0;
     lives = 5;
     gameSpeed = speed1;
     level = 1;
-    gameOver = false;
-    running = false;
-
-    bricks = createBricks(rows, columns, brickWidth, brickHeight);
+    state = GameState.LAUNCHING;
 }
 
 function levelUp() {
-    // keep current state (speed, bat size etc) on level up
+    // keep much of current state (speed, bat size etc) on level up
 
     ball.resetDirection();
     ball.y = bat.y - ball.radius;
 
-    running = false;
-
     bricks = createBricks(rows, columns, brickWidth, brickHeight);
+
+    level++;
+    state = GameState.LAUNCHING;
 }
 
 function newBall() {
@@ -392,8 +375,9 @@ function newBall() {
     ball.numberOfBrickHits = 0;
     ball.isLost = false;
 
+    lives--;
     gameSpeed = speed1;
-    running = false;
+    state = GameState.LAUNCHING;
 }
 
 function createBricks(rows, columns, brickWidth, brickHeight) {
@@ -435,6 +419,41 @@ function getBrickScore(rowNumber) {
         case 9: return 1;
         default: return 0;
     }
+}
+
+function intersects(ball, radius, brick) {
+    const halfWidth = brick.width / 2;
+    const halfHeight = brick.height / 2;
+
+    let distX = Math.abs(ball.x - (brick.left + halfWidth));
+    let distY = Math.abs(ball.y - (brick.top + halfHeight));
+
+    if (distX > (halfWidth + radius) ||
+        distY > (halfHeight + radius)) {
+        return false;
+    }
+
+    if (distX <= (halfWidth + radius) ||
+        distY <= (halfHeight + radius)) {
+        return true;
+    }
+
+    let cornerDistance_sq =
+        Math.pow((distX - halfWidth), 2) +
+        Math.pow((distY - halfHeight), 2);
+
+    return cornerDistance_sq <= radius * radius;
+}
+
+function getCellFromXY(ball) {
+    let x = Math.floor(ball.x / brickWidth);
+    let y = Math.floor(ball.y / brickHeight);
+
+    return new Point2d(x, y);
+}
+
+function getBrickAtColRow(bricks, col, row) {
+    return bricks[row * columns + col];
 }
 
 function clamp(value, min, max) {
