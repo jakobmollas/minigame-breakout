@@ -147,7 +147,7 @@ function checkBallToBatCollision() {
     let impactRotation = ((ball.x - bat.x) / bat.width - 0.5) * 4;
 
     // clamp to some min/max angles to avoid very shallow angles
-    let newHeading = clamp(ball.heading + impactRotation, -Math.PI * 0.75, -Math.PI * 0.25);
+    let newHeading = clamp(ball.heading + impactRotation, -Math.PI * 0.80, -Math.PI * 0.20);
     ball.setHeading(newHeading);
 }
 
