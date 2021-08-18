@@ -22,7 +22,7 @@ const speed4 = 360;
 
 let canvas;
 let context;
-let mouseX = 0;
+let inputCenterX = 0;
 
 let bat;
 let ball;
@@ -88,7 +88,7 @@ function render() {
 }
 
 function moveBat() {
-    bat.x = clamp(mouseX, 0, canvas.width - bat.width)
+    bat.x = clamp(inputCenterX - bat.width / 2, 0, canvas.width - bat.width)
 }
 
 function moveBall() {
@@ -324,12 +324,16 @@ function touchEnd(e) {
 }
 
 function touchMove(e) {
-    mouseX = e.touches.length > 0 ? e.touches[0].clientX : mouseX;
+    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, canvas.width);
 }
 
 function mouseMove(e) {
-    mouseX = e.pageX - bat.width / 2;
+    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, canvas.width);
     e.preventDefault();
+}
+
+function map(value, inputMin, inputMax, outputMin, outputMax) {
+    return (value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin;
 }
 
 function mouseDown(e) {

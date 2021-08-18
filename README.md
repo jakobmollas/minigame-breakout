@@ -14,4 +14,4 @@ Using a library like **P5.js** would simplify a lot of things but I wanted to se
 
 The hardest part for me was to implement a reasonable ball -> brick collision detection. It works pretty good now but does not support insane speeds or more correctly too large deltas in ball movement, for example if the ball would move more than one brick height/width in one frame.
 
-Also, finding good ways to stucture Javascript proved challenging.
+Also, finding good ways to structure Javascript proved challenging.
