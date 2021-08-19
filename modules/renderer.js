@@ -1,19 +1,17 @@
 export default class Renderer {
     #stats;
     #ctx;
-    #width;
-    #height;
+    #canvas;
 
-    constructor(stats, context, width, height) {
+    constructor(stats, context) {
         this.#stats = stats;
         this.#ctx = context;
-        this.#width = width;
-        this.#height = height;
+        this.#canvas = context.canvas;
     }
 
     drawBackground() {
         this.#ctx.fillStyle = "#00000055";
-        this.#ctx.fillRect(0, 0, this.#width, this.#height);
+        this.#ctx.fillRect(0, 0, this.#canvas.width, this.#canvas.height);
     }
     
     drawBricks(bricks) {
@@ -56,8 +54,8 @@ export default class Renderer {
         this.#ctx.textAlign = "center";
         this.#ctx.textBaseline = 'middle';
     
-        let x = this.#width / 2;
-        let y = this.#height / 1.5;
+        let x = this.#canvas.width / 2;
+        let y = this.#canvas.height / 1.5;
     
         var g = this.#ctx.createLinearGradient(0, y - 15, 0, y + 15);
         g.addColorStop("0", "#D25444");

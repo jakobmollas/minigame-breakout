@@ -21,8 +21,8 @@ const speed4 = 360;
 
 const GameState = { "LAUNCHING": 0, "RUNNING": 1, "LEVEL_UP": 2, "BALL_LOST": 3, "GAME_OVER": 4 };
 
-let width = 0;
-let height = 0;
+let width;
+let height;
 let inputCenterX = 0;
 
 let bat;
@@ -53,7 +53,7 @@ function setupRenderer() {
     let statsElement = document.getElementById("stats");
     let canvasContext = setupCanvasContext();
     
-    return new Renderer(statsElement, canvasContext, width, height);
+    return new Renderer(statsElement, canvasContext);
 }
 
 function setupCanvasContext() {
@@ -61,19 +61,14 @@ function setupCanvasContext() {
     width = canvas.width;
     height = canvas.height;
 
-    let dpr = 1 / (window.devicePixelRatio || 1);
-    canvas.width = canvas.width * dpr;
-    canvas.height = canvas.height * dpr;
-
-    // Scale drawing context to match dpr
     let context = canvas.getContext('2d');
-    context.scale(dpr, dpr);
-
     return context;
 }
 
 function mainLoop() {
     gameTime.update();
+
+    console.log(width);
 
     processGameLogic();
     render();
@@ -317,7 +312,7 @@ function levelUp() {
 }
 
 function newBall() {
-    bat.resetWidth();
+    bat.resetwidth;
 
     ball.resetDirection();
     ball.x = bat.left + bat.Width / 2;
