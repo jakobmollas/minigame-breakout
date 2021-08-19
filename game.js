@@ -6,6 +6,7 @@ import Bat from './modules/bat.js';
 import Brick from './modules/brick.js';
 import GameTime from './modules/gametime.js';
 import Rectangle from './modules/rectangle.js';
+import Renderer from './modules/renderer.js';
 
 const columns = 18;
 const rows = 10;
@@ -20,7 +21,6 @@ const speed4 = 360;
 
 const GameState = { "LAUNCHING": 0, "RUNNING": 1, "LEVEL_UP": 2, "BALL_LOST": 3, "GAME_OVER": 4 };
 
-let context;
 let width = 0;
 let height = 0;
 let inputCenterX = 0;
@@ -32,11 +32,12 @@ let lives;
 let gameSpeed;
 let level;
 let bricks = [];
-let gameTime = new GameTime();
 let state = GameState.LAUNCHING;
+let renderer;
+const gameTime = new GameTime();
 
 window.onload = function () {
-    context = setupCanvasContext();
+    renderer = setupRenderer();
 
     document.addEventListener("touchmove", touchMove);
     document.addEventListener("touchend", touchEnd);
@@ -48,9 +49,15 @@ window.onload = function () {
     window.requestAnimationFrame(mainLoop);
 }
 
+function setupRenderer() {
+    let statsElement = document.getElementById("stats");
+    let canvasContext = setupCanvasContext();
+    
+    return new Renderer(statsElement, canvasContext);
+}
+
 function setupCanvasContext() {
     let canvas = document.getElementById("game-canvas");
-
     width = canvas.width;
     height = canvas.height;
 
@@ -94,24 +101,23 @@ function processGameLogic() {
 }
 
 function render() {
-    drawBackground();
-    drawBricks();
-    drawBat();
-    drawBall();
-
-    drawGameStats();
+    renderer.drawBackground();
+    renderer.drawBricks(bricks);
+    renderer.drawBat(bat);
+    renderer.drawBall(ball, ball => getBrickColor(getCellFromXY(ball).y));
+    renderer.drawGameStats(score, lives);
 
     switch (state) {
         case GameState.LEVEL_UP:
-            drawLevelUp();
+            renderer.drawLevelUp();
             break;
 
         case GameState.BALL_LOST:
-            drawBallLost();
+            renderer.drawBallLost();
             break;
 
         case GameState.GAME_OVER:
-            drawGameOver();
+            renderer.drawGameOver();
             break;
     }
 }
@@ -240,64 +246,6 @@ function handleGameOver() {
         (level >= 2 && activeBricks().length <= 0);
 
     state = isGameOver ? GameState.GAME_OVER : state;
-}
-
-function drawBackground() {
-    context.fillStyle = "#00000055";
-    context.fillRect(0, 0, width, height);
-}
-
-function drawBricks() {
-    for (let brick of activeBricks()) {
-        context.fillStyle = brick.color;
-        context.fillRect(brick.left, brick.top, brick.width - 1, brick.height - 1);
-    }
-}
-
-function drawBat() {
-    context.fillStyle = "#D45345";
-    context.fillRect(bat.left, bat.top, bat.width, bat.height);
-}
-
-function drawBall() {
-    context.fillStyle = getBrickColor(getCellFromXY(ball).y);
-    context.beginPath();
-    context.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI);
-    context.fill();
-}
-
-function drawGameStats() {
-    let stats = document.getElementById("stats");
-    stats.innerHTML = "SCORE: " + score + " LIVES: " + lives;
-}
-
-function drawLevelUp() {
-    drawOverlay("LEVEL UP");
-}
-
-function drawBallLost() {
-    drawOverlay("BALL LOST");
-}
-
-function drawGameOver() {
-    drawOverlay("GAME OVER");
-}
-
-function drawOverlay(text) {
-    context.font = "3rem 'Press Start 2P'";
-    context.textAlign = "center";
-    context.textBaseline = 'middle';
-
-    let x = width / 2;
-    let y = height / 1.5;
-
-    var g = context.createLinearGradient(0, y - 15, 0, y + 15);
-    g.addColorStop("0", "#D25444");
-    g.addColorStop("0.2", "#D07137");
-    g.addColorStop("1.0", "#3F4FCE");
-    context.fillStyle = g;
-
-    context.fillText(text, x, y);
 }
 
 function touchEnd(e) {
