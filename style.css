@@ -7,6 +7,7 @@
     text-align: center;
     line-height: 1.5rem;
     cursor: none;
+    overflow: hidden;
 }
 
 html {
@@ -39,5 +40,10 @@ p {
     margin-bottom: 0.5rem;   
     border: 0.5rem solid #8E8E8E;
     border-bottom: none;
-    width: 90%;
+}
+
+@media all and (max-width: 1024px) {
+    #game-canvas {
+        width: 90%;
+    }
 }
