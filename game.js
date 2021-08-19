@@ -1,4 +1,9 @@
-'use strict'
+import Point2d from './modules/point2d.js';
+import Vector2d from './modules/vector2d.js';
+import Ball from './modules/ball.js';
+import Bat from './modules/bat.js';
+import Brick from './modules/brick.js';
+import GameTime from './modules/gametime.js';
 
 const columns = 18;
 const rows = 10;

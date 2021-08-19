@@ -1,6 +1,4 @@
-'use strict'
-
-class GameTime {
+export default class GameTime {
     deltaTime = 0;
     deltaTimeFactor = 0;
     fps = 0;

@@ -1,6 +1,4 @@
-'use strict'
-
-class Bat {
+export default class Bat {
     x = 0;
     y = 0;
     #width = 0;

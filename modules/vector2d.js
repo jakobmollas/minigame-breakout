@@ -1,8 +1,6 @@
-'use strict'
-
 // uses radians
 
-class Vector2d {
+export default class Vector2d {
     x = 0;
     y = 0;
 
@@ -63,15 +61,15 @@ class Vector2d {
         return this;
     }
 
-    mult(length) {
+    multiply(length) {
         this.x *= length;
         this.y *= length;
 
         return this;
     }
 
-    static mult(vector, length) {
-        return vector.clone().mult(length);
+    static multiply(vector, length) {
+        return vector.clone().multiply(length);
     }
 
     invertX() {
@@ -90,4 +88,3 @@ class Vector2d {
         return this;
     }
 }
-

@@ -1,6 +1,4 @@
-'use strict'
-
-class Point2d {
+export default class Point2d {
     x = 0;
     y = 0;
 
