@@ -53,7 +53,7 @@ function setupRenderer() {
     let statsElement = document.getElementById("stats");
     let canvasContext = setupCanvasContext();
     
-    return new Renderer(statsElement, canvasContext);
+    return new Renderer(statsElement, canvasContext, width, height);
 }
 
 function setupCanvasContext() {

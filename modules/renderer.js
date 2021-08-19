@@ -4,11 +4,11 @@ export default class Renderer {
     #width;
     #height;
 
-    constructor(stats, context) {
+    constructor(stats, context, width, height) {
         this.#stats = stats;
         this.#ctx = context;
-        this.#width = context.canvas.width;
-        this.#height = context.canvas.height;
+        this.#width = width;
+        this.#height = height;
     }
 
     drawBackground() {
