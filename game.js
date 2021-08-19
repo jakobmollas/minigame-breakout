@@ -68,8 +68,6 @@ function setupCanvasContext() {
 function mainLoop() {
     gameTime.update();
 
-    console.log(width);
-
     processGameLogic();
     render();
 
