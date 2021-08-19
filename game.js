@@ -1,9 +1,11 @@
+import { default as Collisions, PointOfImpact } from './modules/collisions.js';
 import Point2d from './modules/point2d.js';
 import Vector2d from './modules/vector2d.js';
 import Ball from './modules/ball.js';
 import Bat from './modules/bat.js';
 import Brick from './modules/brick.js';
 import GameTime from './modules/gametime.js';
+import Rectangle from './modules/rectangle.js';
 
 const columns = 18;
 const rows = 10;
@@ -115,14 +117,14 @@ function render() {
 }
 
 function moveBat() {
-    bat.x = clamp(inputCenterX - bat.width / 2, 0, width - bat.width)
+    bat.left = clamp(inputCenterX - bat.width / 2, 0, width - bat.width)
 }
 
 function moveBall() {
     if (state !== GameState.RUNNING) {
         // Follow bat
-        ball.x = bat.x + bat.width / 2;
-        ball.y = bat.y - ball.radius;
+        ball.x = bat.left + bat.width / 2;
+        ball.y = bat.top - ball.radius;
         return;
     }
 
@@ -130,43 +132,44 @@ function moveBall() {
 }
 
 function checkBallToWallCollision() {
-    if (ball.x < ball.radius || ball.x > width - ball.radius) {
-        ball.invertX();
-        ball.x = clamp(ball.x, ball.radius, width - ball.radius);
-    }
+    const pointOfImpact = Collisions.ballToInnerRectangle(ball, new Rectangle(0, 0, width, height));
 
-    if (ball.y < ball.radius) {
-        ball.invertY();
-        ball.y = ball.radius;
-        ball.topWallHasBeenHit = true;
-    }
-    else if (ball.y > height - ball.radius) {
-        ball.isLost = true;
+    switch (pointOfImpact) {
+        case PointOfImpact.LEFT:
+        case PointOfImpact.RIGHT:
+            ball.invertX();
+            ball.x = clamp(ball.x, ball.radius, width - ball.radius);
+            break;
+
+        case PointOfImpact.TOP:
+            ball.invertY();
+            ball.y = ball.radius;
+            ball.topWallHasBeenHit = true;
+            break;
+
+        case PointOfImpact.BOTTOM:
+            ball.isLost = true;
+            break;
     }
 }
 
 function checkBallToBatCollision() {
-    if (ball.y + ball.radius <= bat.y) {
-        return;
+    const pointOfImpact = Collisions.ballToRectangle(ball, bat);
+    if (pointOfImpact === PointOfImpact.TOP) {
+        ball.invertY();
+        ball.y = bat.top - ball.radius;
+
+        // let point of impact affect bounce direction
+        let impactRotation = ((ball.x - bat.left) / bat.width - 0.5) * 4;
+
+        // clamp to some min/max angles to avoid very shallow angles
+        let newHeading = clamp(ball.heading + impactRotation, -Math.PI * 0.80, -Math.PI * 0.20);
+        ball.setHeading(newHeading);
     }
-
-    if (ball.x < bat.x || ball.x > bat.x + bat.width) {
-        return;
-    }
-
-    ball.invertY();
-    ball.y = bat.y - ball.radius;
-
-    // let point of impact affect bounce direction
-    let impactRotation = ((ball.x - bat.x) / bat.width - 0.5) * 4;
-
-    // clamp to some min/max angles to avoid very shallow angles
-    let newHeading = clamp(ball.heading + impactRotation, -Math.PI * 0.80, -Math.PI * 0.20);
-    ball.setHeading(newHeading);
 }
 
 function checkBallToBrickCollision() {
-    // Check brick at ball pos, then above/below/left/right
+    // Check brick at current ball pos, then above/below/left/right
     let bricksToCheck = [];
     let c = getCellFromXY(ball);
     bricksToCheck.push(getBrickAtColRow(bricks, c.x, c.y - 1));
@@ -176,27 +179,20 @@ function checkBallToBrickCollision() {
     bricksToCheck.push(getBrickAtColRow(bricks, c.x, c.y));
 
     for (let brick of bricksToCheck.filter(b => b?.active)) {
-        if (!intersects(ball, ball.radius, brick))
-            continue;
+        const pointOfImpact = Collisions.ballToRectangle(ball, brick);
+        switch (pointOfImpact) {
+            case PointOfImpact.LEFT:
+            case PointOfImpact.RIGHT:
+                ball.invertX();
+                break;
 
-        // divide brick into 4 angular sectors based on ball position and all 4 brick corners, taking ball radius into consideration
-        // these are used to determine if the impact is vertical or horizontal
-        // vectors are calculated counter-clockwise starting at upper right corner
-        let h1 = new Vector2d(brick.right + ball.radius, brick.top - ball.radius).subtract(ball).heading;
-        let h2 = new Vector2d(brick.left - ball.radius, brick.top - ball.radius).subtract(ball).heading;
-        let h3 = new Vector2d(brick.left - ball.radius, brick.bottom + ball.radius).subtract(ball).heading;
-        let h4 = new Vector2d(brick.right + ball.radius, brick.bottom + ball.radius).subtract(ball).heading;
+            case PointOfImpact.TOP:
+            case PointOfImpact.BOTTOM:
+                ball.invertY();
+                break;
 
-        // edge case - if ball is exactly aligned with brick top, h1/h2 angle will be positive 0-PI, negate in that case
-        h2 = ball.y === (brick.top - ball.radius) ? -h2 : h2;
-
-        let invertedBallHeading = Vector2d.fromAngle(ball.heading).invert().heading;
-        if (Vector2d.isHeadingBetween(invertedBallHeading, h1, h2) ||
-            Vector2d.isHeadingBetween(invertedBallHeading, h3, h4)) {
-            ball.invertY();
-        }
-        else {
-            ball.invertX();
+            default:
+                continue;
         }
 
         ball.topRowsHasBeenHit = ball.topRowsHasBeenHit || brick.isTopRow;
@@ -233,18 +229,17 @@ function handleBallLost() {
 }
 
 function handleLevelUp() {
-    let remainingBricks = bricks.filter(b => b.active).length;
-    if (level < 2 && remainingBricks <= 0) {
+    if (level < 2 && activeBricks().length <= 0) {
         state = GameState.LEVEL_UP;
     }
 }
 
 function handleGameOver() {
-    let remainingBricks = bricks.filter(b => b.active).length;
-    if ((lives <= 1 && state === GameState.BALL_LOST) ||
-        (level >= 2 && remainingBricks <= 0)) {
-        state = GameState.GAME_OVER;
-    }
+    const isGameOver =
+        (lives <= 1 && state === GameState.BALL_LOST) ||
+        (level >= 2 && activeBricks().length <= 0);
+
+    state = isGameOver ? GameState.GAME_OVER : state;
 }
 
 function drawBackground() {
@@ -253,7 +248,7 @@ function drawBackground() {
 }
 
 function drawBricks() {
-    for (let brick of bricks.filter(b => b?.active)) {
+    for (let brick of activeBricks()) {
         context.fillStyle = brick.color;
         context.fillRect(brick.left, brick.top, brick.width - 1, brick.height - 1);
     }
@@ -261,13 +256,13 @@ function drawBricks() {
 
 function drawBat() {
     context.fillStyle = "#D45345";
-    context.fillRect(bat.x, bat.y, bat.width, bat.height);
+    context.fillRect(bat.left, bat.top, bat.width, bat.height);
 }
 
 function drawBall() {
     context.fillStyle = getBrickColor(getCellFromXY(ball).y);
     context.beginPath();
-    context.arc(ball.x, ball.y, 5, 0, 2 * Math.PI);
+    context.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI);
     context.fill();
 }
 
@@ -352,7 +347,7 @@ function startNewGame() {
     const batInitialWidth = 3 * brickWidth;
 
     bat = new Bat(width / 2 - batInitialWidth / 2, height - 2 * batHeight, batInitialWidth, batHeight);
-    ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
+    ball = new Ball(bat.left + bat.Width / 2, bat.top - ballRadius, ballRadius, initialBallDirection);
     bricks = createBricks(rows, columns, brickWidth, brickHeight);
 
     score = 0;
@@ -364,9 +359,8 @@ function startNewGame() {
 
 function levelUp() {
     // keep much of current state (speed, bat size etc) on level up
-
     ball.resetDirection();
-    ball.y = bat.y - ball.radius;
+    ball.y = bat.top - ball.radius;
 
     bricks = createBricks(rows, columns, brickWidth, brickHeight);
 
@@ -378,8 +372,8 @@ function newBall() {
     bat.resetWidth();
 
     ball.resetDirection();
-    ball.x = bat.x + bat.Width / 2;
-    ball.y = bat.y - ball.radius;
+    ball.x = bat.left + bat.Width / 2;
+    ball.y = bat.top - ball.radius;
     ball.topRowsHasBeenHit = false;
     ball.topWallHasBeenHit = false;
     ball.numberOfBrickHits = 0;
@@ -431,30 +425,6 @@ function getBrickScore(rowNumber) {
     }
 }
 
-function intersects(ball, radius, brick) {
-    const halfWidth = brick.width / 2;
-    const halfHeight = brick.height / 2;
-
-    let distX = Math.abs(ball.x - (brick.left + halfWidth));
-    let distY = Math.abs(ball.y - (brick.top + halfHeight));
-
-    if (distX > (halfWidth + radius) ||
-        distY > (halfHeight + radius)) {
-        return false;
-    }
-
-    if (distX <= (halfWidth + radius) ||
-        distY <= (halfHeight + radius)) {
-        return true;
-    }
-
-    let cornerDistance_sq =
-        Math.pow((distX - halfWidth), 2) +
-        Math.pow((distY - halfHeight), 2);
-
-    return cornerDistance_sq <= radius * radius;
-}
-
 function getCellFromXY(ball) {
     let x = Math.floor(ball.x / brickWidth);
     let y = Math.floor(ball.y / brickHeight);
@@ -464,6 +434,10 @@ function getCellFromXY(ball) {
 
 function getBrickAtColRow(bricks, col, row) {
     return bricks[row * columns + col];
+}
+
+function activeBricks() {
+    return bricks.filter(b => b?.active);
 }
 
 function clamp(value, min, max) {
