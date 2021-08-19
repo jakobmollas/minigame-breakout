@@ -1,6 +1,6 @@
-'use strict'
+import Vector2d from "./vector2d.js"
 
-class Ball {
+export default class Ball {
     #pos;
     #radius = 0;
     #direction;
@@ -42,7 +42,7 @@ class Ball {
     }
 
     move(distance) {
-        this.#pos.add(Vector2d.mult(this.#direction, distance));
+        this.#pos.add(Vector2d.multiply(this.#direction, distance));
     }
 
     invertX() {

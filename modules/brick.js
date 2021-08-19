@@ -1,12 +1,6 @@
-'use strict'
+import Rectangle from "./rectangle.js";
 
-class Brick {
-    #left = 0;
-    #right = 0;
-    #top = 0;
-    #bottom = 0;
-    #width = 0;
-    #height = 0;
+export default class Brick extends Rectangle {
     #column = 0;
     #row = 0;
     #color = "";
@@ -15,12 +9,8 @@ class Brick {
     active = false;
 
     constructor(left, top, width, height, column, row, color, score, isTopRow, active) {
-        this.#left = left;
-        this.#right = left + width;
-        this.#top = top;
-        this.#bottom = top + height;
-        this.#width = width;
-        this.#height = height;
+        super(left, top, width, height);
+
         this.#column = column;
         this.#row = row;
         this.#color = color;
@@ -29,14 +19,8 @@ class Brick {
         this.active = active;
     }
 
-    get left() { return this.#left; }
-    get right() { return this.#right; }
-    get top() { return this.#top; }
-    get bottom() { return this.#bottom; }
-    get width() { return this.#width; }
     get column() { return this.#column; }
     get row() { return this.#row; }
-    get height() { return this.#height; }
     get color() { return this.#color; }
     get score() { return this.#score; }
     get isTopRow() { return this.#isTopRow; }
