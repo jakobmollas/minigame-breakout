@@ -1,4 +1,4 @@
-import Vector2d from "./vector2d.js"
+import Vector2d from "./vector2d.js";
 
 export default class Ball {
     #pos;

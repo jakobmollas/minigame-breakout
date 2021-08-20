@@ -1,4 +1,4 @@
-import Rectangle from "./rectangle.js"
+import Rectangle from "./rectangle.js";
 
 export default class Bat extends Rectangle {
     #isSmall = false;
@@ -14,7 +14,7 @@ export default class Bat extends Rectangle {
     }
 
     makeSmall() {
-        this.width *= 2/3;
+        this.width *= 2 / 3;
         this.#isSmall = true;
     }
 

@@ -10,7 +10,7 @@ export default class Vector2d {
     }
 
     static fromAngle(angle, length = 1) {
-        return new Vector2d(length * Math.cos(angle), length * Math.sin(angle), 0);
+        return new Vector2d(length * Math.cos(angle), length * Math.sin(angle));
     };
 
     clone() {
