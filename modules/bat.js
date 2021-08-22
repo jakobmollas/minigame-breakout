@@ -26,7 +26,7 @@ export default class Bat extends Rectangle {
     }
 
     render(ctx) {
-        ctx.fillStyle = "#D45345";
+        ctx.fillStyle = this.color;
         ctx.fillRect(this.left, this.top, this.width, this.height);
     }
 }

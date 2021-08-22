@@ -6,7 +6,7 @@ import Bat from './modules/bat.js';
 import Brick from './modules/brick.js';
 import GameTime from './modules/gametime.js';
 import Rectangle from './modules/rectangle.js';
-import Renderer from './modules/renderer.js';
+import Renderer from './modules/ui.js';
 
 // Todo: render per object
 // todo: remove rectangle inheritance
@@ -206,7 +206,7 @@ function handleBallToBrickCollision() {
     const bricksToCheck = getBricksAtBallPosition(ball, bricks);
 
     for (let brick of bricksToCheck.filter(b => b?.active)) {
-        const pointOfImpact = Collisions.ballToRectangle(ball, brick);
+        const pointOfImpact = Collisions.ballToRectangle(ball, brick.rectangle);
         switch (pointOfImpact) {
             case PointOfImpact.LEFT:
             case PointOfImpact.RIGHT:
@@ -371,8 +371,8 @@ function createBricks(rows, columns, brickWidth, brickHeight) {
     let bricks = [];
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
-            const left = col * brickWidth;
-            const top = row * brickHeight;
+            const x = col * brickWidth;
+            const y = row * brickHeight;
             const color = getRowColor(row);
             const score = getRowScore(row);
             const isTopRow = row >= 4 && row <= 5;
@@ -380,9 +380,8 @@ function createBricks(rows, columns, brickWidth, brickHeight) {
 
             bricks.push(
                 new Brick(
-                    left, top,
+                    x, y,
                     brickWidth, brickHeight,
-                    col, row,
                     color, score, isTopRow, active));
         }
     }
