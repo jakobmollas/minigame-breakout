@@ -40,6 +40,7 @@ export default class Ball {
 
     reset() {
         this.#direction.setHeading(this.#initialHeading);
+        this.isLost = false;
     }
 
     draw(ctx) {

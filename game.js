@@ -1,53 +1,28 @@
 import { default as Collisions, PointOfImpact } from './modules/collisions.js';
 import Point2d from './modules/point2d.js';
-import Vector2d from './modules/vector2d.js';
 import Ball from './modules/ball.js';
 import Bat from './modules/bat.js';
 import Brick from './modules/brick.js';
+import * as Constants from './modules/constants.js';
 import GameTime from './modules/gametime.js';
 import Rectangle from './modules/rectangle.js';
 import UiRenderer from './modules/ui-renderer.js';
 
-// todo: move all state to separate class?
-
-const borderWidth = 10;
-const gameAreaWidth = 540;
-const gameAreaHeight = 360;
-const fullWidth = gameAreaWidth + 2*borderWidth;  
-const fullHeight = gameAreaHeight + borderWidth;
-
-const columns = 18;
-const rows = 10;
-
-const brickWidth = 30;
-const brickHeight = 15;
-
-const speed1 = 150; // pixels per second
-const speed2 = 210;
-const speed3 = 270;
-const speed4 = 360;
-
-const ballRadius = 5;
-const initialBallDirection = new Vector2d(0.7, -1);
-const batHeight = 0.5 * brickHeight;
-const batInitialWidth = 3 * brickWidth;
-
 const GameState = { LAUNCHING: 0, RUNNING: 1, LEVEL_UP: 2, BALL_LOST: 3, GAME_OVER: 4 };
 
-let bat = new Bat(gameAreaWidth / 2 - batInitialWidth / 2, gameAreaHeight - 2 * batHeight, batInitialWidth, batHeight, "#D45345");
-let ball = new Ball(0, 0, ballRadius, initialBallDirection);
-let bricks = createBricks();
+const bat = new Bat(Constants.gameAreaWidth / 2 - Constants.batInitialWidth / 2, Constants.gameAreaHeight - 2 * Constants.batHeight, Constants.batInitialWidth, Constants.batHeight, "#D45345");
+const ball = new Ball(0, 0, Constants.ballRadius, Constants.initialBallDirection);
+const bricks = createBricks();
+const gameTime = new GameTime();
 
-let score, lives, gameSpeed, level, state;
+let score, lives, gameSpeed, level, gameState;
 let numberOfBrickHits, topWallHasBeenHit, topRowsHasBeenHit;
-
 let ctx, uiRenderer;
 let inputCenterX = 0;
-const gameTime = new GameTime();
 
 window.onload = function () {
     ctx = setupCanvasContext();
-    uiRenderer = new UiRenderer(ctx, fullWidth, fullHeight);
+    uiRenderer = new UiRenderer(ctx, Constants.fullWidth, Constants.fullHeight);
 
     document.addEventListener("touchmove", touchMove);
     document.addEventListener("touchend", touchEnd);
@@ -61,8 +36,8 @@ window.onload = function () {
 
 function setupCanvasContext() {
     let canvas = document.getElementById("game-canvas");
-    canvas.width = fullWidth;
-    canvas.height = fullHeight;
+    canvas.width = Constants.fullWidth;
+    canvas.height = Constants.fullHeight;
 
     let dpr = 1 / (window.devicePixelRatio || 1);
     canvas.width = canvas.width * dpr;
@@ -84,13 +59,13 @@ function mainLoop() {
 }
 
 function processGameLogic() {
-    if (state === GameState.LAUNCHING || state === GameState.RUNNING) {
+    if (gameState === GameState.LAUNCHING || gameState === GameState.RUNNING) {
         moveBat();
         moveBall();
         updateBallColor();
     }
 
-    if (state === GameState.RUNNING) {
+    if (gameState === GameState.RUNNING) {
         handleBallToWallCollision();
         handleBallToBatCollision();
         handleBallToBrickCollision();
@@ -109,7 +84,7 @@ function render() {
 
     // game objects are drawn in an area excluding borders
     ctx.save();
-    ctx.translate(borderWidth, borderWidth);
+    ctx.translate(Constants.borderWidth, Constants.borderWidth);
     bricks.forEach(b => b.draw(ctx));
     bat.draw(ctx);
     ball.draw(ctx);
@@ -117,7 +92,7 @@ function render() {
 
     uiRenderer.drawGameStats(score, lives);
 
-    switch (state) {
+    switch (gameState) {
         case GameState.LEVEL_UP:
             uiRenderer.drawLevelUp();
             break;
@@ -133,11 +108,11 @@ function render() {
 }
 
 function moveBat() {
-    bat.x = clamp(inputCenterX - bat.width / 2, 0, gameAreaWidth - bat.width)
+    bat.x = clamp(inputCenterX - bat.width / 2, 0, Constants.gameAreaWidth - bat.width)
 }
 
 function moveBall() {
-    if (state === GameState.RUNNING) {
+    if (gameState === GameState.RUNNING) {
         ball.move(gameSpeed * gameTime.deltaTimeFactor);
         return;
     }
@@ -147,7 +122,7 @@ function moveBall() {
 
 function updateBallColor() {
     // Match color of bricks at current row
-    const rowNumber = getCellFromXY(ball.x, ball.y).y;
+    const rowNumber = getBrickCoordsFromGameAreaXY(ball.x, ball.y).y;
     ball.color = getRowColor(rowNumber);
 }
 
@@ -157,7 +132,7 @@ function positionBallOnTopOfBat(ball, bat) {
 }
 
 function handleBallToWallCollision() {
-    const gameArea = new Rectangle(0, 0, gameAreaWidth, gameAreaHeight);
+    const gameArea = new Rectangle(0, 0, Constants.gameAreaWidth, Constants.gameAreaHeight);
     const pointOfImpact = Collisions.ballToInnerRectangle(ball, gameArea);
 
     switch (pointOfImpact) {
@@ -178,7 +153,7 @@ function handleBallToWallCollision() {
 
 function bounceBallAgainstHorizontalWall(ball) {
     ball.invertX();
-    ball.x = clamp(ball.x, ball.radius, gameAreaWidth - ball.radius);
+    ball.x = clamp(ball.x, ball.radius, Constants.gameAreaWidth - ball.radius);
 }
 
 function bounceBallAgainstTopWall(ball) {
@@ -238,25 +213,25 @@ function handleBallToBrickCollision() {
  */
 function getBricksAtBallPosition(ball, bricks) {
     let targetBricks = [];
-    let c = getCellFromXY(ball.x, ball.y);
-    targetBricks.push(getBrickAtCell(bricks, c.x, c.y - 1));
-    targetBricks.push(getBrickAtCell(bricks, c.x, c.y + 1));
-    targetBricks.push(getBrickAtCell(bricks, c.x - 1, c.y));
-    targetBricks.push(getBrickAtCell(bricks, c.x + 1, c.y));
-    targetBricks.push(getBrickAtCell(bricks, c.x, c.y));
+    let bc = getBrickCoordsFromGameAreaXY(ball.x, ball.y);
+    targetBricks.push(getBrickAtCell(bricks, bc.x, bc.y - 1));
+    targetBricks.push(getBrickAtCell(bricks, bc.x, bc.y + 1));
+    targetBricks.push(getBrickAtCell(bricks, bc.x - 1, bc.y));
+    targetBricks.push(getBrickAtCell(bricks, bc.x + 1, bc.y));
+    targetBricks.push(getBrickAtCell(bricks, bc.x, bc.y));
 
     return targetBricks;
 }
 
 function handleSpeedUp() {
-    if (numberOfBrickHits === 4 && gameSpeed < speed2) {
-        gameSpeed = speed2;
+    if (numberOfBrickHits === 4 && gameSpeed < Constants.speed2) {
+        gameSpeed = Constants.speed2;
     }
-    else if (numberOfBrickHits === 12 && gameSpeed < speed3) {
-        gameSpeed = speed3;
+    else if (numberOfBrickHits === 12 && gameSpeed < Constants.speed3) {
+        gameSpeed = Constants.speed3;
     }
-    else if (topRowsHasBeenHit && gameSpeed < speed4) {
-        gameSpeed = speed4;
+    else if (topRowsHasBeenHit && gameSpeed < Constants.speed4) {
+        gameSpeed = Constants.speed4;
     }
 }
 
@@ -268,34 +243,34 @@ function handleBatSize() {
 
 function handleBallLost() {
     if (ball.isLost) {
-        state = GameState.BALL_LOST;
+        gameState = GameState.BALL_LOST;
     }
 }
 
 function handleLevelUp() {
     if (level < 2 && activeBricks().length <= 0) {
-        state = GameState.LEVEL_UP;
+        gameState = GameState.LEVEL_UP;
     }
 }
 
 function handleGameOver() {
     const isGameOver =
-        (lives <= 1 && state === GameState.BALL_LOST) ||
+        (lives <= 1 && gameState === GameState.BALL_LOST) ||
         (level >= 2 && activeBricks().length <= 0);
 
-    state = isGameOver ? GameState.GAME_OVER : state;
+    gameState = isGameOver ? GameState.GAME_OVER : gameState;
 }
 
 function clearBackground() {
     ctx.fillStyle = "#00000055";
-    ctx.fillRect(0, 0, fullWidth, fullHeight);
+    ctx.fillRect(0, 0, Constants.fullWidth, Constants.fullHeight);
 }
 
 function drawBorders() {
     ctx.fillStyle = "#8E8E8E";
-    ctx.fillRect(0, 0, borderWidth, fullHeight);
-    ctx.fillRect(0, 0, fullWidth, borderWidth);
-    ctx.fillRect(fullWidth-borderWidth, 0, borderWidth, fullHeight);
+    ctx.fillRect(0, 0, Constants.borderWidth, Constants.fullHeight);
+    ctx.fillRect(0, 0, Constants.fullWidth, Constants.borderWidth);
+    ctx.fillRect(Constants.fullWidth - Constants.borderWidth, 0, Constants.borderWidth, Constants.fullHeight);
 }
 
 function touchEnd(e) {
@@ -305,12 +280,12 @@ function touchEnd(e) {
 
 function touchMove(e) {
     let xPos = e.changedTouches[0]?.pageX ?? 0;
-    inputCenterX = map(xPos, 0, window.innerWidth, 0, gameAreaWidth);
+    inputCenterX = map(xPos, 0, window.innerWidth, 0, Constants.gameAreaWidth);
 }
 
 function mouseMove(e) {
     e.preventDefault();
-    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, gameAreaWidth);
+    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, Constants.gameAreaWidth);
 }
 
 function mouseDown(e) {
@@ -319,9 +294,9 @@ function mouseDown(e) {
 }
 
 function handleRestart() {
-    switch (state) {
+    switch (gameState) {
         case GameState.LAUNCHING:
-            state = GameState.RUNNING;
+            gameState = GameState.RUNNING;
             break;
 
         case GameState.LEVEL_UP:
@@ -329,7 +304,7 @@ function handleRestart() {
             break;
 
         case GameState.BALL_LOST:
-            newBall();
+            nextBall();
             break;
 
         case GameState.GAME_OVER:
@@ -342,47 +317,50 @@ function startNewGame() {
     score = 0;
     lives = 5;
     level = 1;
-    gameSpeed = speed1;
-    state = GameState.LAUNCHING;
+    
+    prepareNextBall();
 }
 
 function levelUp() {
-    // keep much of current state (speed, bat size etc) on level up
+    // keep speed, bat size etc. on level up
     ball.reset();
     resetBricks();
 
     level++;
-    state = GameState.LAUNCHING;
+    gameState = GameState.LAUNCHING;
 }
 
-function newBall() {
+function nextBall() {
+    lives--;
+    prepareNextBall();
+}
+
+function prepareNextBall() {
     bat.reset();
     ball.reset();
-    ball.isLost = false;
 
-    lives--;
     numberOfBrickHits = 0;
     topRowsHasBeenHit = false;
     topWallHasBeenHit = false;
-    gameSpeed = speed1;
-    state = GameState.LAUNCHING;
+    gameSpeed = Constants.speed1;
+    gameState = GameState.LAUNCHING;
 }
 
 function createBricks() {
     let bricks = [];
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < columns; col++) {
-            const x = col * brickWidth;
-            const y = row * brickHeight;
+    for (let row = 0; row < Constants.rows; row++) {
+        for (let col = 0; col < Constants.columns; col++) {
+            const x = col * Constants.brickWidth;
+            const y = row * Constants.brickHeight + Constants.topBrickYOffset;
             const color = getRowColor(row);
             const score = getRowScore(row);
-            const isTopRow = row >= 4 && row <= 5;
-            const active = row > 3;
+            const isTopRow = row < 2;
+            const active = true;
 
             bricks.push(
                 new Brick(
                     x, y,
-                    brickWidth, brickHeight,
+                    Constants.brickWidth, Constants.brickHeight,
                     color, score, isTopRow, active));
         }
     }
@@ -396,37 +374,37 @@ function resetBricks() {
 
 function getRowColor(rowNumber) {
     switch (rowNumber) {
-        case 4: return "#D25444";
-        case 5: return "#D07137";
-        case 6: return "#BA7B2C";
-        case 7: return "#A49A26";
-        case 8: return "#439348";
-        case 9: return "#3F4FCE";
+        case 0: return "#D25444";
+        case 1: return "#D07137";
+        case 2: return "#BA7B2C";
+        case 3: return "#A49A26";
+        case 4: return "#439348";
+        case 5: return "#3F4FCE";
         default: return "#D25444";
     }
 }
 
 function getRowScore(rowNumber) {
     switch (rowNumber) {
-        case 4: return 7;
-        case 5: return 7;
-        case 6: return 4;
-        case 7: return 4;
-        case 8: return 1;
-        case 9: return 1;
+        case 0: return 7;
+        case 1: return 7;
+        case 2: return 4;
+        case 3: return 4;
+        case 4: return 1;
+        case 5: return 1;
         default: return 0;
     }
 }
 
-function getCellFromXY(x, y) {
-    let col = Math.floor(x / brickWidth);
-    let row = Math.floor(y / brickHeight);
+function getBrickCoordsFromGameAreaXY(x, y) {
+    let col = Math.floor(x / Constants.brickWidth);
+    let row = Math.floor((y - Constants.topBrickYOffset) / Constants.brickHeight);
 
     return new Point2d(col, row);
 }
 
 function getBrickAtCell(bricks, col, row) {
-    return bricks[row * columns + col];
+    return bricks[row * Constants.columns + col];
 }
 
 function activeBricks() {
