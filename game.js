@@ -8,8 +8,9 @@ import GameTime from './modules/gametime.js';
 import Rectangle from './modules/rectangle.js';
 import Renderer from './modules/ui.js';
 
-// Todo: render per object
 // todo: draw all text in canvas, remove "breakout"
+// Todo: remove renderer, create some kind of ui drawer, static?
+// todo: move all state to separate class?
 
 const columns = 18;
 const rows = 10;
@@ -108,9 +109,7 @@ function processGameLogic() {
 }
 
 function render() {
-    renderer.drawBackground();
-    // todo: draw borders
-
+    clearBackground();
     bricks.forEach(b => b.render(ctx));
     bat.render(ctx);
     ball.render(ctx);
@@ -146,7 +145,7 @@ function moveBall() {
 
 function updateBallColor() {
     // Match color of bricks at current row
-    const rowNumber = getCellFromXY(ball).y;
+    const rowNumber = getCellFromXY(ball.x, ball.y).y;
     ball.color = getRowColor(rowNumber);
 }
 
@@ -237,12 +236,12 @@ function handleBallToBrickCollision() {
  */
 function getBricksAtBallPosition(ball, bricks) {
     let targetBricks = [];
-    let c = getCellFromXY(ball);
-    targetBricks.push(getBrickAtColRow(bricks, c.x, c.y - 1));
-    targetBricks.push(getBrickAtColRow(bricks, c.x, c.y + 1));
-    targetBricks.push(getBrickAtColRow(bricks, c.x - 1, c.y));
-    targetBricks.push(getBrickAtColRow(bricks, c.x + 1, c.y));
-    targetBricks.push(getBrickAtColRow(bricks, c.x, c.y));
+    let c = getCellFromXY(ball.x, ball.y);
+    targetBricks.push(getBrickAtCell(bricks, c.x, c.y - 1));
+    targetBricks.push(getBrickAtCell(bricks, c.x, c.y + 1));
+    targetBricks.push(getBrickAtCell(bricks, c.x - 1, c.y));
+    targetBricks.push(getBrickAtCell(bricks, c.x + 1, c.y));
+    targetBricks.push(getBrickAtCell(bricks, c.x, c.y));
 
     return targetBricks;
 }
@@ -283,6 +282,11 @@ function handleGameOver() {
         (level >= 2 && activeBricks().length <= 0);
 
     state = isGameOver ? GameState.GAME_OVER : state;
+}
+
+function clearBackground() {
+    ctx.fillStyle = "#00000055";
+    ctx.fillRect(0, 0, width, height);
 }
 
 function touchEnd(e) {
@@ -412,14 +416,14 @@ function getRowScore(rowNumber) {
     }
 }
 
-function getCellFromXY(ball) {
-    let x = Math.floor(ball.x / brickWidth);
-    let y = Math.floor(ball.y / brickHeight);
+function getCellFromXY(x, y) {
+    let col = Math.floor(x / brickWidth);
+    let row = Math.floor(y / brickHeight);
 
-    return new Point2d(x, y);
+    return new Point2d(col, row);
 }
 
-function getBrickAtColRow(bricks, col, row) {
+function getBrickAtCell(bricks, col, row) {
     return bricks[row * columns + col];
 }
 

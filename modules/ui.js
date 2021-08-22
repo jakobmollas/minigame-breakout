@@ -13,11 +13,6 @@ export default class Renderer {
         this.#height = height;
     }
 
-    drawBackground() {
-        this.#ctx.fillStyle = "#00000055";
-        this.#ctx.fillRect(0, 0, this.#width, this.#height);
-    }
-
     drawGameStats(score, lives) {
         this.#stats.innerHTML = "SCORE: " + score + " LIVES: " + lives;
     }
