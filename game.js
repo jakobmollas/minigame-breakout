@@ -9,7 +9,6 @@ import Rectangle from './modules/rectangle.js';
 import Renderer from './modules/ui.js';
 
 // Todo: render per object
-// todo: remove rectangle inheritance
 // todo: draw all text in canvas, skip "breakout" and instructions, 
 // todo: put instructions in canvas at startup
 
@@ -134,7 +133,7 @@ function render() {
 }
 
 function moveBat() {
-    bat.left = clamp(inputCenterX - bat.width / 2, 0, width - bat.width)
+    bat.x = clamp(inputCenterX - bat.width / 2, 0, width - bat.width)
 }
 
 function moveBall() {
@@ -153,8 +152,8 @@ function updateBallColor() {
 }
 
 function positionBallOnTopOfBat(ball, bat) {
-    ball.x = bat.left + bat.width / 2;
-    ball.y = bat.top - ball.radius;
+    ball.x = bat.x + bat.width / 2;
+    ball.y = bat.y - ball.radius;
 }
 
 function handleBallToWallCollision() {
@@ -189,15 +188,15 @@ function bounceBallAgainstTopWall(ball) {
 }
 
 function handleBallToBatCollision() {
-    const pointOfImpact = Collisions.ballToRectangle(ball, bat);
+    const pointOfImpact = Collisions.ballToRectangle(ball, bat.rectangle);
     if (pointOfImpact !== PointOfImpact.TOP)
         return;
 
     ball.invertY();
-    ball.y = bat.top - ball.radius;
+    ball.y = bat.y - ball.radius;
 
     // let point of impact affect bounce direction
-    const impactRotation = ((ball.x - bat.left) / bat.width - 0.5) * 4;
+    const impactRotation = ((ball.x - bat.x) / bat.width - 0.5) * 4;
 
     // clamp to some min/max angles to avoid very shallow angles
     const newHeading = clamp(ball.heading + impactRotation, -Math.PI * 0.80, -Math.PI * 0.20);
@@ -334,7 +333,7 @@ function startNewGame() {
     const batInitialWidth = 3 * brickWidth;
 
     bat = new Bat(width / 2 - batInitialWidth / 2, height - 2 * batHeight, batInitialWidth, batHeight);
-    ball = new Ball(bat.left + bat.Width / 2, bat.top - ballRadius, ballRadius, initialBallDirection);
+    ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
     bricks = createBricks(rows, columns, brickWidth, brickHeight);
 
     score = 0;
@@ -347,8 +346,7 @@ function startNewGame() {
 function levelUp() {
     // keep much of current state (speed, bat size etc) on level up
     ball.resetDirection();
-    ball.y = bat.top - ball.radius;
-
+    
     bricks = createBricks(rows, columns, brickWidth, brickHeight);
 
     level++;

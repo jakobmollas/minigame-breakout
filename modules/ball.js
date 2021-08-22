@@ -15,29 +15,12 @@ export default class Ball {
         this.#initialHeading = direction.heading;
     }
 
-    get x() {
-        return this.#pos.x;
-    }
-
-    set x(value) {
-        this.#pos.x = value;
-    }
-
-    get y() {
-        return this.#pos.y;
-    }
-
-    set y(value) {
-        this.#pos.y = value;
-    }
-
-    get radius() {
-        return this.#radius;
-    }
-
-    get heading() {
-        return this.#direction.heading;
-    }
+    get x() { return this.#pos.x; }
+    set x(value) { this.#pos.x = value; }
+    get y() { return this.#pos.y; }
+    set y(value) { this.#pos.y = value; }
+    get radius() { return this.#radius; }
+    get heading() { return this.#direction.heading; }
 
     move(distance) {
         this.#pos.add(Vector2d.multiply(this.#direction, distance));
