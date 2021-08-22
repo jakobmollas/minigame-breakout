@@ -10,7 +10,6 @@ import Renderer from './modules/ui.js';
 
 // Todo: render per object
 // todo: remove rectangle inheritance
-// todo: move ball stuff to game state
 // todo: draw all text in canvas, skip "breakout" and instructions, 
 // todo: put instructions in canvas at startup
 
@@ -41,6 +40,9 @@ let level;
 let bricks = [];
 let state = GameState.LAUNCHING;
 let renderer;
+let numberOfBrickHits = 0;
+let topWallHasBeenHit = false;
+let topRowsHasBeenHit = false;
 const gameTime = new GameTime();
 
 window.onload = function () {
@@ -183,7 +185,7 @@ function bounceBallAgainstHorizontalWall(ball) {
 function bounceBallAgainstTopWall(ball) {
     ball.invertY();
     ball.y = ball.radius;
-    ball.topWallHasBeenHit = true;
+    topWallHasBeenHit = true;
 }
 
 function handleBallToBatCollision() {
@@ -222,8 +224,8 @@ function handleBallToBrickCollision() {
                 continue;
         }
 
-        ball.topRowsHasBeenHit = ball.topRowsHasBeenHit || brick.isTopRow;
-        ball.numberOfBrickHits++;
+        topRowsHasBeenHit = topRowsHasBeenHit || brick.isTopRow;
+        numberOfBrickHits++;
         score += brick.score;
         brick.active = false;
 
@@ -248,19 +250,19 @@ function getBricksAtBallPosition(ball, bricks) {
 }
 
 function handleSpeedUp() {
-    if (ball.numberOfBrickHits === 4 && gameSpeed < speed2) {
+    if (numberOfBrickHits === 4 && gameSpeed < speed2) {
         gameSpeed = speed2;
     }
-    else if (ball.numberOfBrickHits === 12 && gameSpeed < speed3) {
+    else if (numberOfBrickHits === 12 && gameSpeed < speed3) {
         gameSpeed = speed3;
     }
-    else if (ball.topRowsHasBeenHit && gameSpeed < speed4) {
+    else if (topRowsHasBeenHit && gameSpeed < speed4) {
         gameSpeed = speed4;
     }
 }
 
 function handleBatSize() {
-    if (ball.topWallHasBeenHit && !bat.isSmall) {
+    if (topWallHasBeenHit && !bat.isSmall) {
         bat.makeSmall();
     }
 }
@@ -357,12 +359,12 @@ function newBall() {
     bat.resetWidth();
 
     ball.resetDirection();
-    ball.topRowsHasBeenHit = false;
-    ball.topWallHasBeenHit = false;
-    ball.numberOfBrickHits = 0;
     ball.isLost = false;
 
     lives--;
+    numberOfBrickHits = 0;
+    topRowsHasBeenHit = false;
+    topWallHasBeenHit = false;
     gameSpeed = speed1;
     state = GameState.LAUNCHING;
 }

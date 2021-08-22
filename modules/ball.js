@@ -5,9 +5,6 @@ export default class Ball {
     #radius = 0;
     #direction;
     #initialHeading;
-    numberOfBrickHits = 0;
-    topWallHasBeenHit = false;
-    topRowsHasBeenHit = false;
     isLost = false;
     color;
 
