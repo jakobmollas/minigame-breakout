@@ -112,7 +112,7 @@ function render() {
     // todo: draw borders
 
     bricks.forEach(b => b.render(ctx));
-    renderer.drawBat(bat);
+    bat.render(ctx);
     ball.render(ctx);
     renderer.drawGameStats(score, lives);
 
