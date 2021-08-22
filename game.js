@@ -6,9 +6,8 @@ import Bat from './modules/bat.js';
 import Brick from './modules/brick.js';
 import GameTime from './modules/gametime.js';
 import Rectangle from './modules/rectangle.js';
-import Renderer from './modules/ui.js';
+import UiRenderer from './modules/ui-renderer.js';
 
-// Todo: remove renderer, create some kind of ui drawer, static?
 // todo: move all state to separate class?
 
 const columns = 18;
@@ -37,14 +36,15 @@ let gameSpeed;
 let level;
 let bricks = [];
 let state = GameState.LAUNCHING;
-let renderer;
+let uiRenderer;
 let numberOfBrickHits = 0;
 let topWallHasBeenHit = false;
 let topRowsHasBeenHit = false;
 const gameTime = new GameTime();
 
 window.onload = function () {
-    renderer = setupRenderer();
+    ctx = setupCanvasContext();
+    uiRenderer = new UiRenderer(ctx, width, height);
 
     document.addEventListener("touchmove", touchMove);
     document.addEventListener("touchend", touchEnd);
@@ -54,13 +54,6 @@ window.onload = function () {
     startNewGame();
 
     window.requestAnimationFrame(mainLoop);
-}
-
-function setupRenderer() {
-    let statsElement = document.getElementById("stats");
-    ctx = setupCanvasContext();
-
-    return new Renderer(statsElement, ctx, width, height);
 }
 
 function setupCanvasContext() {
@@ -112,19 +105,19 @@ function render() {
     bricks.forEach(b => b.render(ctx));
     bat.render(ctx);
     ball.render(ctx);
-    renderer.drawGameStats(score, lives);
+    uiRenderer.drawGameStats(score, lives);
 
     switch (state) {
         case GameState.LEVEL_UP:
-            renderer.drawLevelUp();
+            uiRenderer.drawLevelUp();
             break;
 
         case GameState.BALL_LOST:
-            renderer.drawBallLost();
+            uiRenderer.drawBallLost();
             break;
 
         case GameState.GAME_OVER:
-            renderer.drawGameOver();
+            uiRenderer.drawGameOver();
             break;
     }
 }
