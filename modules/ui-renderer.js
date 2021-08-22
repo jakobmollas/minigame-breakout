@@ -27,7 +27,7 @@ export default class UiRenderer {
         this.setFont(this.#ctx, 1);
 
         let x = this.getCenterCoordinates().x;
-        let y = 20;
+        let y = 30;
         
         this.#ctx.fillStyle = "#8E8E8E";
         this.#ctx.fillText("SCORE: " + score + "   LIVES: " + lives, x, y);

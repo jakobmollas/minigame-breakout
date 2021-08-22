@@ -10,11 +10,18 @@ import UiRenderer from './modules/ui-renderer.js';
 
 // todo: move all state to separate class?
 
+const borderWidth = 10;
+const gameAreaWidth = 540;
+const gameAreaHeight = 360;
+const fullWidth = gameAreaWidth + 2*borderWidth;  
+const fullHeight = gameAreaHeight + borderWidth;
+
 const columns = 18;
 const rows = 10;
 
 const brickWidth = 30;
 const brickHeight = 15;
+
 
 const speed1 = 150; // pixels per second
 const speed2 = 210;
@@ -23,11 +30,9 @@ const speed4 = 360;
 
 const GameState = { LAUNCHING: 0, RUNNING: 1, LEVEL_UP: 2, BALL_LOST: 3, GAME_OVER: 4 };
 
-let width = 0;
-let height = 0;
+
 let inputCenterX = 0;
 let ctx;
-
 let bat;
 let ball;
 let score;
@@ -44,7 +49,7 @@ const gameTime = new GameTime();
 
 window.onload = function () {
     ctx = setupCanvasContext();
-    uiRenderer = new UiRenderer(ctx, width, height);
+    uiRenderer = new UiRenderer(ctx, fullWidth, fullHeight);
 
     document.addEventListener("touchmove", touchMove);
     document.addEventListener("touchend", touchEnd);
@@ -58,8 +63,8 @@ window.onload = function () {
 
 function setupCanvasContext() {
     let canvas = document.getElementById("game-canvas");
-    width = canvas.width;
-    height = canvas.height;
+    canvas.width = fullWidth;
+    canvas.height = fullHeight;
 
     let dpr = 1 / (window.devicePixelRatio || 1);
     canvas.width = canvas.width * dpr;
@@ -101,10 +106,19 @@ function processGameLogic() {
 }
 
 function render() {
+    // static game elements
     clearBackground();
-    bricks.forEach(b => b.render(ctx));
-    bat.render(ctx);
-    ball.render(ctx);
+    drawBorders();
+
+    // dynamic game objects - these are drawn using a different origin
+    ctx.save();
+    ctx.translate(borderWidth, borderWidth);
+    bricks.forEach(b => b.draw(ctx));
+    bat.draw(ctx);
+    ball.draw(ctx);
+    ctx.restore();
+
+    // Ui
     uiRenderer.drawGameStats(score, lives);
 
     switch (state) {
@@ -123,7 +137,7 @@ function render() {
 }
 
 function moveBat() {
-    bat.x = clamp(inputCenterX - bat.width / 2, 0, width - bat.width)
+    bat.x = clamp(inputCenterX - bat.width / 2, 0, gameAreaWidth - bat.width)
 }
 
 function moveBall() {
@@ -147,7 +161,7 @@ function positionBallOnTopOfBat(ball, bat) {
 }
 
 function handleBallToWallCollision() {
-    const gameArea = new Rectangle(0, 0, width, height);
+    const gameArea = new Rectangle(0, 0, gameAreaWidth, gameAreaHeight);
     const pointOfImpact = Collisions.ballToInnerRectangle(ball, gameArea);
 
     switch (pointOfImpact) {
@@ -168,7 +182,7 @@ function handleBallToWallCollision() {
 
 function bounceBallAgainstHorizontalWall(ball) {
     ball.invertX();
-    ball.x = clamp(ball.x, ball.radius, width - ball.radius);
+    ball.x = clamp(ball.x, ball.radius, gameAreaWidth - ball.radius);
 }
 
 function bounceBallAgainstTopWall(ball) {
@@ -278,7 +292,14 @@ function handleGameOver() {
 
 function clearBackground() {
     ctx.fillStyle = "#00000055";
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, fullWidth, fullHeight);
+}
+
+function drawBorders() {
+    ctx.fillStyle = "#8E8E8E";
+    ctx.fillRect(0, 0, borderWidth, fullHeight);
+    ctx.fillRect(0, 0, fullWidth, borderWidth);
+    ctx.fillRect(fullWidth-borderWidth, 0, borderWidth, fullHeight);
 }
 
 function touchEnd(e) {
@@ -288,12 +309,12 @@ function touchEnd(e) {
 
 function touchMove(e) {
     let xPos = e.changedTouches[0]?.pageX ?? 0;
-    inputCenterX = map(xPos, 0, window.innerWidth, 0, width);
+    inputCenterX = map(xPos, 0, window.innerWidth, 0, gameAreaWidth);
 }
 
 function mouseMove(e) {
     e.preventDefault();
-    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, width);
+    inputCenterX = map(e.pageX, 0, window.innerWidth, 0, gameAreaWidth);
 }
 
 function mouseDown(e) {
@@ -327,7 +348,7 @@ function startNewGame() {
     const batHeight = 0.5 * brickHeight;
     const batInitialWidth = 3 * brickWidth;
 
-    bat = new Bat(width / 2 - batInitialWidth / 2, height - 2 * batHeight, batInitialWidth, batHeight);
+    bat = new Bat(gameAreaWidth / 2 - batInitialWidth / 2, gameAreaHeight - 2 * batHeight, batInitialWidth, batHeight, "#D45345");
     ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
     bricks = createBricks(rows, columns, brickWidth, brickHeight);
 

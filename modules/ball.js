@@ -42,7 +42,7 @@ export default class Ball {
         this.#direction.setHeading(this.#initialHeading);
     }
 
-    render(ctx) {
+    draw(ctx) {
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.#pos.x, this.#pos.y, this.#radius, 0, 2 * Math.PI);

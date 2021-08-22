@@ -21,7 +21,7 @@ export default class Brick  {
     get isTopRow() { return this.#isTopRow; }
     get rectangle() { return this.#rect; }
 
-    render(ctx) {
+    draw(ctx) {
         if (!this.active) return;
 
         ctx.fillStyle = this.#color;

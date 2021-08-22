@@ -6,7 +6,7 @@ export default class Bat {
     color;
     #rect;
 
-    constructor(x, y, width, height, color="#D45345") {
+    constructor(x, y, width, height, color) {
         this.#standardWidth = width;
         this.color = color;
 
@@ -30,7 +30,7 @@ export default class Bat {
         this.#isSmall = false;
     }
 
-    render(ctx) {
+    draw(ctx) {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.#rect.left, this.#rect.top, this.#rect.width, this.#rect.height);
     }
