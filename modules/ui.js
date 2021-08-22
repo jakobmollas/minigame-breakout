@@ -13,10 +13,6 @@ export default class Renderer {
         this.#height = height;
     }
 
-    drawGameStats(score, lives) {
-        this.#stats.innerHTML = "SCORE: " + score + " LIVES: " + lives;
-    }
-
     drawLevelUp() {
         this.drawFancyOverlay("LEVEL UP");
     }
@@ -29,17 +25,20 @@ export default class Renderer {
         this.drawFancyOverlay("GAME OVER");
     }
 
-    drawFancyOverlay(text) {
-        this.drawOverlay(3, text);
+    drawGameStats(score, lives) {
+        this.setFont(this.#ctx, 1);
+
+        let x = this.getCenterCoordinates().x;
+        let y = 20;
+        
+        this.#ctx.fillStyle = "#8E8E8E";
+        this.#ctx.fillText("SCORE: " + score + "   LIVES: " + lives, x, y);
     }
 
-    drawOverlay(sizeInRem, text) {
-        this.#ctx.font = `${sizeInRem}rem 'Press Start 2P'`;
-        this.#ctx.textAlign = "center";
-        this.#ctx.textBaseline = 'middle';
+    drawFancyOverlay(text) {
+        this.setFont(this.#ctx, 3);
 
         let c = this.getCenterCoordinates();
-        
         this.#ctx.fillStyle = this.createGradient(c.y, 15);
         this.#ctx.fillText(text, c.x, c.y);
     }
@@ -51,6 +50,12 @@ export default class Renderer {
         g.addColorStop("1.0", "#3F4FCE");
 
         return g;
+    }
+
+    setFont(ctx, sizeInRem) {
+        ctx.font = `${sizeInRem}rem 'Press Start 2P'`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = 'middle';
     }
 
     getCenterCoordinates() {

@@ -8,7 +8,6 @@ import GameTime from './modules/gametime.js';
 import Rectangle from './modules/rectangle.js';
 import Renderer from './modules/ui.js';
 
-// todo: draw all text in canvas, remove "breakout"
 // Todo: remove renderer, create some kind of ui drawer, static?
 // todo: move all state to separate class?
 

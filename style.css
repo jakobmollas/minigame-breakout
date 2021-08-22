@@ -2,10 +2,6 @@
     margin: 0;
     padding: 0;
     border: 0;
-    color: #8E8E8E;
-    font-family: 'Press Start 2P';
-    text-align: center;
-    line-height: 1.5rem;
     cursor: none;
     overflow: hidden;
 }
@@ -18,20 +14,10 @@ body {
     background: black;
 }
 
-h1 {
-    padding-top: 0.5rem;
-    letter-spacing: 1rem;
-    font-size: 1.2rem;
-}
-
-h2 {
-    letter-spacing: 0.5em;
-    font-size: 0.8rem;
-}
-
 #game-canvas {
     display: block;
     margin: auto;
+    margin-top: 1rem;
     border: 0.5rem solid #8E8E8E;
     border-bottom: none;
 }
