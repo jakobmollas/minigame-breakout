@@ -21,13 +21,6 @@ export default class Renderer {
         this.#ctx.fillRect(bat.left, bat.top, bat.width, bat.height);
     }
 
-    drawBall(ball) {
-        this.#ctx.fillStyle = ball.color;
-        this.#ctx.beginPath();
-        this.#ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI);
-        this.#ctx.fill();
-    }
-
     drawGameStats(score, lives) {
         this.#stats.innerHTML = "SCORE: " + score + " LIVES: " + lives;
     }

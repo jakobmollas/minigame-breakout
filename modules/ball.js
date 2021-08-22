@@ -61,4 +61,11 @@ export default class Ball {
     resetDirection() {
         this.#direction.setHeading(this.#initialHeading);
     }
+
+    render(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.#pos.x, this.#pos.y, this.#radius, 0, 2 * Math.PI);
+        ctx.fill();
+    }
 }

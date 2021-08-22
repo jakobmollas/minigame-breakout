@@ -8,6 +8,12 @@ import GameTime from './modules/gametime.js';
 import Rectangle from './modules/rectangle.js';
 import Renderer from './modules/renderer.js';
 
+// Todo: render per object
+// todo: remove rectangle inheritance
+// todo: move ball stuff to game state
+// todo: draw all text in canvas, skip "breakout" and instructions, 
+// todo: put instructions in canvas at startup
+
 const columns = 18;
 const rows = 10;
 
@@ -107,7 +113,7 @@ function render() {
 
     bricks.forEach(b => b.render(ctx));
     renderer.drawBat(bat);
-    renderer.drawBall(ball);
+    ball.render(ctx);
     renderer.drawGameStats(score, lives);
 
     switch (state) {
