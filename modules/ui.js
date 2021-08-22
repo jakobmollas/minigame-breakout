@@ -1,3 +1,5 @@
+import Point2d from "./point2d.js";
+
 export default class Renderer {
     #stats;
     #ctx;
@@ -21,31 +23,42 @@ export default class Renderer {
     }
 
     drawLevelUp() {
-        this.drawOverlay("LEVEL UP");
+        this.drawFancyOverlay("LEVEL UP");
     }
 
     drawBallLost() {
-        this.drawOverlay("BALL LOST");
+        this.drawFancyOverlay("BALL LOST");
     }
 
     drawGameOver() {
-        this.drawOverlay("GAME OVER");
+        this.drawFancyOverlay("GAME OVER");
     }
 
-    drawOverlay(text) {
-        this.#ctx.font = "3rem 'Press Start 2P'";
+    drawFancyOverlay(text) {
+        this.drawOverlay(3, text);
+    }
+
+    drawOverlay(sizeInRem, text) {
+        this.#ctx.font = `${sizeInRem}rem 'Press Start 2P'`;
         this.#ctx.textAlign = "center";
         this.#ctx.textBaseline = 'middle';
 
-        let x = this.#width / 2;
-        let y = this.#height / 1.5;
+        let c = this.getCenterCoordinates();
+        
+        this.#ctx.fillStyle = this.createGradient(c.y, 15);
+        this.#ctx.fillText(text, c.x, c.y);
+    }
 
-        var g = this.#ctx.createLinearGradient(0, y - 15, 0, y + 15);
+    createGradient(yCenter, verticalOffset) {
+        let g = this.#ctx.createLinearGradient(0, yCenter - verticalOffset, 0, yCenter + verticalOffset);
         g.addColorStop("0", "#D25444");
         g.addColorStop("0.2", "#D07137");
         g.addColorStop("1.0", "#3F4FCE");
 
-        this.#ctx.fillStyle = g;
-        this.#ctx.fillText(text, x, y);
+        return g;
+    }
+
+    getCenterCoordinates() {
+        return new Point2d(this.#width / 2, this.#height / 1.5);
     }
 }

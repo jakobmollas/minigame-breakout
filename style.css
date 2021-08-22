@@ -29,15 +29,9 @@ h2 {
     font-size: 0.8rem;
 }
 
-p {
-    font-size: 0.7rem;
-    line-height: 1.2rem;
-}
-
 #game-canvas {
     display: block;
     margin: auto;
-    margin-bottom: 0.5rem;   
     border: 0.5rem solid #8E8E8E;
     border-bottom: none;
 }

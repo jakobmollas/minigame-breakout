@@ -9,8 +9,7 @@ import Rectangle from './modules/rectangle.js';
 import Renderer from './modules/ui.js';
 
 // Todo: render per object
-// todo: draw all text in canvas, skip "breakout" and instructions, 
-// todo: put instructions in canvas at startup
+// todo: draw all text in canvas, remove "breakout"
 
 const columns = 18;
 const rows = 10;
