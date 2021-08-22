@@ -38,7 +38,7 @@ export default class Ball {
         this.#direction.setHeading(heading);
     }
 
-    resetDirection() {
+    reset() {
         this.#direction.setHeading(this.#initialHeading);
     }
 

@@ -22,29 +22,27 @@ const rows = 10;
 const brickWidth = 30;
 const brickHeight = 15;
 
-
 const speed1 = 150; // pixels per second
 const speed2 = 210;
 const speed3 = 270;
 const speed4 = 360;
 
+const ballRadius = 5;
+const initialBallDirection = new Vector2d(0.7, -1);
+const batHeight = 0.5 * brickHeight;
+const batInitialWidth = 3 * brickWidth;
+
 const GameState = { LAUNCHING: 0, RUNNING: 1, LEVEL_UP: 2, BALL_LOST: 3, GAME_OVER: 4 };
 
+let bat = new Bat(gameAreaWidth / 2 - batInitialWidth / 2, gameAreaHeight - 2 * batHeight, batInitialWidth, batHeight, "#D45345");
+let ball = new Ball(0, 0, ballRadius, initialBallDirection);
+let bricks = createBricks();
 
+let score, lives, gameSpeed, level, state;
+let numberOfBrickHits, topWallHasBeenHit, topRowsHasBeenHit;
+
+let ctx, uiRenderer;
 let inputCenterX = 0;
-let ctx;
-let bat;
-let ball;
-let score;
-let lives;
-let gameSpeed;
-let level;
-let bricks = [];
-let state = GameState.LAUNCHING;
-let uiRenderer;
-let numberOfBrickHits = 0;
-let topWallHasBeenHit = false;
-let topRowsHasBeenHit = false;
 const gameTime = new GameTime();
 
 window.onload = function () {
@@ -106,11 +104,10 @@ function processGameLogic() {
 }
 
 function render() {
-    // static game elements
     clearBackground();
     drawBorders();
 
-    // dynamic game objects - these are drawn using a different origin
+    // game objects are drawn in an area excluding borders
     ctx.save();
     ctx.translate(borderWidth, borderWidth);
     bricks.forEach(b => b.draw(ctx));
@@ -118,7 +115,6 @@ function render() {
     ball.draw(ctx);
     ctx.restore();
 
-    // Ui
     uiRenderer.drawGameStats(score, lives);
 
     switch (state) {
@@ -343,15 +339,6 @@ function handleRestart() {
 }
 
 function startNewGame() {
-    const ballRadius = 5;
-    const initialBallDirection = new Vector2d(0.7, -1);
-    const batHeight = 0.5 * brickHeight;
-    const batInitialWidth = 3 * brickWidth;
-
-    bat = new Bat(gameAreaWidth / 2 - batInitialWidth / 2, gameAreaHeight - 2 * batHeight, batInitialWidth, batHeight, "#D45345");
-    ball = new Ball(bat.x + bat.Width / 2, bat.y - ballRadius, ballRadius, initialBallDirection);
-    bricks = createBricks(rows, columns, brickWidth, brickHeight);
-
     score = 0;
     lives = 5;
     level = 1;
@@ -361,18 +348,16 @@ function startNewGame() {
 
 function levelUp() {
     // keep much of current state (speed, bat size etc) on level up
-    ball.resetDirection();
-    
-    bricks = createBricks(rows, columns, brickWidth, brickHeight);
+    ball.reset();
+    resetBricks();
 
     level++;
     state = GameState.LAUNCHING;
 }
 
 function newBall() {
-    bat.resetWidth();
-
-    ball.resetDirection();
+    bat.reset();
+    ball.reset();
     ball.isLost = false;
 
     lives--;
@@ -383,7 +368,7 @@ function newBall() {
     state = GameState.LAUNCHING;
 }
 
-function createBricks(rows, columns, brickWidth, brickHeight) {
+function createBricks() {
     let bricks = [];
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < columns; col++) {
@@ -403,6 +388,10 @@ function createBricks(rows, columns, brickWidth, brickHeight) {
     }
 
     return bricks;
+}
+
+function resetBricks() {
+    bricks.forEach(b => b.reset());
 }
 
 function getRowColor(rowNumber) {

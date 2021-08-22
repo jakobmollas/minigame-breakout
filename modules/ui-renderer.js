@@ -11,34 +11,35 @@ export default class UiRenderer {
         this.#height = height;
     }
 
-    drawLevelUp() {
-        this.drawFancyOverlay("LEVEL UP");
-    }
-
-    drawBallLost() {
-        this.drawFancyOverlay("BALL LOST");
-    }
-
-    drawGameOver() {
-        this.drawFancyOverlay("GAME OVER");
-    }
-
     drawGameStats(score, lives) {
         this.setFont(this.#ctx, 1);
 
-        let x = this.getCenterCoordinates().x;
+        let x = this.#width / 2;
         let y = 30;
         
         this.#ctx.fillStyle = "#8E8E8E";
         this.#ctx.fillText("SCORE: " + score + "   LIVES: " + lives, x, y);
     }
 
-    drawFancyOverlay(text) {
+    drawLevelUp() {
+        this.drawGameMessage("LEVEL UP");
+    }
+
+    drawBallLost() {
+        this.drawGameMessage("BALL LOST");
+    }
+
+    drawGameOver() {
+        this.drawGameMessage("GAME OVER");
+    }
+
+    drawGameMessage(text) {
         this.setFont(this.#ctx, 3);
 
-        let c = this.getCenterCoordinates();
-        this.#ctx.fillStyle = this.createGradient(c.y, 15);
-        this.#ctx.fillText(text, c.x, c.y);
+        let x = this.#width / 2;
+        let y = this.#height / 1.5;
+        this.#ctx.fillStyle = this.createGradient(y, 15);
+        this.#ctx.fillText(text, x, y);
     }
 
     createGradient(yCenter, verticalOffset) {
@@ -54,9 +55,5 @@ export default class UiRenderer {
         ctx.font = `${sizeInRem}rem 'Press Start 2P'`;
         ctx.textAlign = "center";
         ctx.textBaseline = 'middle';
-    }
-
-    getCenterCoordinates() {
-        return new Point2d(this.#width / 2, this.#height / 1.5);
     }
 }

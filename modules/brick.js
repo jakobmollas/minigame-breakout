@@ -8,18 +8,21 @@ export default class Brick  {
     #rect;
 
     constructor(x, y, width, height, color, score, isTopRow, active = true) {
+        this.#rect = new Rectangle(x, y, width, height);
         this.#color = color;
         this.#score = score;
         this.#isTopRow = isTopRow;
         this.active = active;
-        
-        this.#rect = new Rectangle(x, y, width, height);
     }
 
     get color() { return this.#color; }
     get score() { return this.#score; }
     get isTopRow() { return this.#isTopRow; }
     get rectangle() { return this.#rect; }
+
+    reset() {
+        this.active = true;
+    }
 
     draw(ctx) {
         if (!this.active) return;

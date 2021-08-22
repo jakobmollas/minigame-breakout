@@ -7,10 +7,9 @@ export default class Bat {
     #rect;
 
     constructor(x, y, width, height, color) {
+        this.#rect = new Rectangle(x, y, width, height);
         this.#standardWidth = width;
         this.color = color;
-
-        this.#rect = new Rectangle(x, y, width, height);
     }
 
     get x() { return this.#rect.left; }
@@ -25,7 +24,7 @@ export default class Bat {
         this.#isSmall = true;
     }
 
-    resetWidth() {
+    reset() {
         this.#rect.width = this.#standardWidth;
         this.#isSmall = false;
     }
