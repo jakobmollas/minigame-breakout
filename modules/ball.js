@@ -9,6 +9,7 @@ export default class Ball {
     topWallHasBeenHit = false;
     topRowsHasBeenHit = false;
     isLost = false;
+    color;
 
     constructor(x, y, radius, direction) {
         this.#pos = new Vector2d(x, y);

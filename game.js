@@ -84,6 +84,7 @@ function processGameLogic() {
     if (state === GameState.LAUNCHING || state === GameState.RUNNING) {
         moveBat();
         moveBall();
+        updateBallColor();
     }
 
     if (state === GameState.RUNNING) {
@@ -103,7 +104,7 @@ function render() {
     renderer.drawBackground();
     renderer.drawBricks(bricks);
     renderer.drawBat(bat);
-    renderer.drawBall(ball, getBallColor(ball));
+    renderer.drawBall(ball);
     renderer.drawGameStats(score, lives);
 
     switch (state) {
@@ -132,6 +133,12 @@ function moveBall() {
     }
 
     positionBallOnTopOfBat(ball, bat);
+}
+
+function updateBallColor() {
+    // Match color of bricks at current row
+    const rowNumber = getCellFromXY(ball).y;
+    ball.color = getRowColor(rowNumber);
 }
 
 function positionBallOnTopOfBat(ball, bat) {
@@ -372,11 +379,6 @@ function createBricks(rows, columns, brickWidth, brickHeight) {
     }
 
     return bricks;
-}
-
-function getBallColor(ball) {
-    const rowNumber = getCellFromXY(ball).y;
-    return getRowColor(rowNumber);
 }
 
 function getRowColor(rowNumber) {
