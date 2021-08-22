@@ -24,4 +24,11 @@ export default class Brick extends Rectangle {
     get color() { return this.#color; }
     get score() { return this.#score; }
     get isTopRow() { return this.#isTopRow; }
+
+    render(ctx) {
+        if (!this.active) return;
+
+        ctx.fillStyle = this.#color;
+        ctx.fillRect(this.left, this.top, this.width - 1, this.height - 1);
+    }
 }

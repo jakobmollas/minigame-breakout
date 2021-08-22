@@ -24,6 +24,7 @@ const GameState = { LAUNCHING: 0, RUNNING: 1, LEVEL_UP: 2, BALL_LOST: 3, GAME_OV
 let width = 0;
 let height = 0;
 let inputCenterX = 0;
+let ctx;
 
 let bat;
 let ball;
@@ -51,9 +52,9 @@ window.onload = function () {
 
 function setupRenderer() {
     let statsElement = document.getElementById("stats");
-    let canvasContext = setupCanvasContext();
+    ctx = setupCanvasContext();
 
-    return new Renderer(statsElement, canvasContext, width, height);
+    return new Renderer(statsElement, ctx, width, height);
 }
 
 function setupCanvasContext() {
@@ -65,10 +66,10 @@ function setupCanvasContext() {
     canvas.width = canvas.width * dpr;
     canvas.height = canvas.height * dpr;
 
-    let context = canvas.getContext('2d');
-    context.scale(dpr, dpr);
+    let ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
 
-    return context;
+    return ctx;
 }
 
 function mainLoop() {
@@ -102,7 +103,9 @@ function processGameLogic() {
 
 function render() {
     renderer.drawBackground();
-    renderer.drawBricks(bricks);
+    // todo: draw borders
+
+    bricks.forEach(b => b.render(ctx));
     renderer.drawBat(bat);
     renderer.drawBall(ball);
     renderer.drawGameStats(score, lives);

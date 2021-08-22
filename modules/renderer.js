@@ -16,13 +16,6 @@ export default class Renderer {
         this.#ctx.fillRect(0, 0, this.#width, this.#height);
     }
 
-    drawBricks(bricks) {
-        for (let brick of bricks.filter(b => b?.active)) {
-            this.#ctx.fillStyle = brick.color;
-            this.#ctx.fillRect(brick.left, brick.top, brick.width - 1, brick.height - 1);
-        }
-    }
-
     drawBat(bat) {
         this.#ctx.fillStyle = "#D45345";
         this.#ctx.fillRect(bat.left, bat.top, bat.width, bat.height);
