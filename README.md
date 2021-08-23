@@ -4,7 +4,7 @@ _Based on Atari 2600 Breakout_
 
 Link: https://jakobmollas.github.io/minigame-breakout/
 
-Implemented using Html5 Canvas, some Html/Css and pure Javascript.
+Implemented using Html5 Canvas and pure Javascript.
 
 * Use mouse/touch to move bat
 * Mouse click/touch to launch ball/restart etc.

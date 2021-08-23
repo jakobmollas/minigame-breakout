@@ -2,9 +2,9 @@ import Ball from './modules/ball.js';
 import Bat from './modules/bat.js';
 import Brick from './modules/brick.js';
 import GameTime from './modules/gametime.js';
-import UiRenderer from './modules/ui-renderer.js';
 import Point2d from './modules/point2d.js';
 import Rectangle from './modules/rectangle.js';
+import UI from "./modules/ui.js";
 import { default as Collisions, PointOfImpact } from './modules/collisions.js';
 import * as Constants from './modules/constants.js';
 import * as Colors from "./modules/colors.js";
@@ -15,12 +15,11 @@ const gameTime = new GameTime();
 let ball, bat, bricks;
 let score, lives, gameSpeed, level, gameState;
 let numberOfBrickHits, topWallHasBeenHit, topRowsHasBeenHit;
-let ctx, uiRenderer;
+let ctx;
 let inputCenterX = 0;
 
 window.onload = function () {
     ctx = setupCanvasContext();
-    uiRenderer = new UiRenderer(ctx, Constants.fullWidth, Constants.fullHeight);
 
     document.addEventListener("touchmove", touchMove);
     document.addEventListener("touchend", touchEnd);
@@ -89,19 +88,19 @@ function render() {
     ball.draw(ctx);
     ctx.restore();
 
-    uiRenderer.drawGameStats(score, lives);
+    UI.drawGameStats(ctx, score, lives);
 
     switch (gameState) {
         case GameState.LEVEL_UP:
-            uiRenderer.drawLevelUp();
+            UI.drawLevelUp(ctx);
             break;
 
         case GameState.BALL_LOST:
-            uiRenderer.drawBallLost();
+            UI.drawBallLost(ctx);
             break;
 
         case GameState.GAME_OVER:
-            uiRenderer.drawGameOver();
+            UI.drawGameOver(ctx);
             break;
     }
 }
@@ -372,7 +371,7 @@ function createBricks() {
             const y = row * Constants.brickHeight;
             const color = getRowColor(row);
             const score = getRowScore(row);
-            const isTopRow = row < 2;
+            const isTopRow = row >= 4 && row <= 5;
 
             const brick = row > 3
                 ? new Brick(x, y,
