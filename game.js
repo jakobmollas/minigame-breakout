@@ -5,7 +5,7 @@ import GameTime from './modules/gametime.js';
 import Point2d from './modules/point2d.js';
 import Rectangle from './modules/rectangle.js';
 import UI from "./modules/ui.js";
-import { default as Collisions, PointOfImpact } from './modules/collisions.js';
+import Collisions, { PointOfImpact } from './modules/collisions.js';
 import * as Constants from './modules/constants.js';
 import * as Colors from "./modules/colors.js";
 
