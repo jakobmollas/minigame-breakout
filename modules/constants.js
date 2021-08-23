@@ -7,11 +7,10 @@ export const fullWidth = gameAreaWidth + 2 * borderWidth;
 export const fullHeight = gameAreaHeight + borderWidth;
 
 export const columns = 18;
-export const rows = 6;
+export const rows = 10;
 
 export const brickWidth = 30;
 export const brickHeight = 15;
-export const topBrickYOffset = 4 * brickHeight;
 
 export const speed1 = 150; // pixels per second
 export const speed2 = 210;

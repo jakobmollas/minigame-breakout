@@ -84,7 +84,7 @@ function render() {
     // game objects are drawn in an area excluding borders
     ctx.save();
     ctx.translate(Constants.borderWidth, Constants.borderWidth);
-    bricks.forEach(b => b.draw(ctx));
+    bricks.forEach(b => b?.draw(ctx));
     bat.draw(ctx);
     ball.draw(ctx);
     ctx.restore();
@@ -200,24 +200,30 @@ function handleBallToBrickCollision() {
         topRowsHasBeenHit = topRowsHasBeenHit || brick.isTopRow;
         numberOfBrickHits++;
         score += brick.score;
-        brick.active = false;
+        brick.hit();
 
         return;
     }
 }
 
 /**
- * Get bricks at ball position plus above/below/left/right, 
- * regardless if they are active or not
+ * Try get bricks at ball position plus above/below/left/right
  */
 function getBricksAtBallPosition(ball, bricks) {
     let targetBricks = [];
     let bc = getBrickCoordsFromGameAreaXY(ball.x, ball.y);
-    targetBricks.push(getBrickAtCell(bricks, bc.x, bc.y - 1));
-    targetBricks.push(getBrickAtCell(bricks, bc.x, bc.y + 1));
-    targetBricks.push(getBrickAtCell(bricks, bc.x - 1, bc.y));
-    targetBricks.push(getBrickAtCell(bricks, bc.x + 1, bc.y));
-    targetBricks.push(getBrickAtCell(bricks, bc.x, bc.y));
+
+    let above = getBrickAtCell(bricks, bc.x, bc.y - 1);
+    let below = getBrickAtCell(bricks, bc.x, bc.y + 1);
+    let left = getBrickAtCell(bricks, bc.x - 1, bc.y);
+    let right = getBrickAtCell(bricks, bc.x + 1, bc.y);
+    let center = getBrickAtCell(bricks, bc.x, bc.y);
+
+    if (above) targetBricks.push(above);
+    if (below) targetBricks.push(below);
+    if (left) targetBricks.push(left);
+    if (right) targetBricks.push(right);
+    if (center) targetBricks.push(center);
 
     return targetBricks;
 }
@@ -363,17 +369,18 @@ function createBricks() {
     for (let row = 0; row < Constants.rows; row++) {
         for (let col = 0; col < Constants.columns; col++) {
             const x = col * Constants.brickWidth;
-            const y = row * Constants.brickHeight + Constants.topBrickYOffset;
+            const y = row * Constants.brickHeight;
             const color = getRowColor(row);
             const score = getRowScore(row);
             const isTopRow = row < 2;
-            const active = true;
 
-            bricks.push(
-                new Brick(
-                    x, y,
+            const brick = row > 3
+                ? new Brick(x, y,
                     Constants.brickWidth, Constants.brickHeight,
-                    color, score, isTopRow, active));
+                    color, score, isTopRow)
+                : null;
+
+            bricks.push(brick);
         }
     }
 
@@ -381,17 +388,17 @@ function createBricks() {
 }
 
 function resetBricks() {
-    bricks.forEach(b => b.reset());
+    bricks.forEach(b => b?.reset());
 }
 
 function getRowColor(rowNumber) {
     switch (rowNumber) {
-        case 0: return Colors.brick1;
-        case 1: return Colors.brick2;
-        case 2: return Colors.brick3;
-        case 3: return Colors.brick4;
-        case 4: return Colors.brick5;
-        case 5: return Colors.brick6;
+        case 4: return Colors.brick1;
+        case 5: return Colors.brick2;
+        case 6: return Colors.brick3;
+        case 7: return Colors.brick4;
+        case 8: return Colors.brick5;
+        case 9: return Colors.brick6;
 
         default: return Colors.brick1;
     }
@@ -399,19 +406,19 @@ function getRowColor(rowNumber) {
 
 function getRowScore(rowNumber) {
     switch (rowNumber) {
-        case 0: return 7;
-        case 1: return 7;
-        case 2: return 4;
-        case 3: return 4;
-        case 4: return 1;
-        case 5: return 1;
+        case 4: return 7;
+        case 5: return 7;
+        case 6: return 4;
+        case 7: return 4;
+        case 8: return 1;
+        case 9: return 1;
         default: return 0;
     }
 }
 
 function getBrickCoordsFromGameAreaXY(x, y) {
     let col = Math.floor(x / Constants.brickWidth);
-    let row = Math.floor((y - Constants.topBrickYOffset) / Constants.brickHeight);
+    let row = Math.floor(y / Constants.brickHeight);
 
     return new Point2d(col, row);
 }
