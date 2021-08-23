@@ -1,20 +1,18 @@
-import { default as Collisions, PointOfImpact } from './modules/collisions.js';
-import Point2d from './modules/point2d.js';
 import Ball from './modules/ball.js';
 import Bat from './modules/bat.js';
 import Brick from './modules/brick.js';
-import * as Constants from './modules/constants.js';
 import GameTime from './modules/gametime.js';
-import Rectangle from './modules/rectangle.js';
 import UiRenderer from './modules/ui-renderer.js';
+import Point2d from './modules/point2d.js';
+import Rectangle from './modules/rectangle.js';
+import { default as Collisions, PointOfImpact } from './modules/collisions.js';
+import * as Constants from './modules/constants.js';
+import * as Colors from "./modules/colors.js";
 
 const GameState = { LAUNCHING: 0, RUNNING: 1, LEVEL_UP: 2, BALL_LOST: 3, GAME_OVER: 4 };
-
-const bat = new Bat(Constants.gameAreaWidth / 2 - Constants.batInitialWidth / 2, Constants.gameAreaHeight - 2 * Constants.batHeight, Constants.batInitialWidth, Constants.batHeight, "#D45345");
-const ball = new Ball(0, 0, Constants.ballRadius, Constants.initialBallDirection);
-const bricks = createBricks();
 const gameTime = new GameTime();
 
+let ball, bat, bricks;
 let score, lives, gameSpeed, level, gameState;
 let numberOfBrickHits, topWallHasBeenHit, topRowsHasBeenHit;
 let ctx, uiRenderer;
@@ -29,6 +27,7 @@ window.onload = function () {
     document.addEventListener("mousemove", mouseMove);
     document.addEventListener("mousedown", mouseDown);
 
+    createGameObjects();
     startNewGame();
 
     window.requestAnimationFrame(mainLoop);
@@ -262,12 +261,12 @@ function handleGameOver() {
 }
 
 function clearBackground() {
-    ctx.fillStyle = "#00000055";
+    ctx.fillStyle = Colors.background;
     ctx.fillRect(0, 0, Constants.fullWidth, Constants.fullHeight);
 }
 
 function drawBorders() {
-    ctx.fillStyle = "#8E8E8E";
+    ctx.fillStyle = Colors.border;
     ctx.fillRect(0, 0, Constants.borderWidth, Constants.fullHeight);
     ctx.fillRect(0, 0, Constants.fullWidth, Constants.borderWidth);
     ctx.fillRect(Constants.fullWidth - Constants.borderWidth, 0, Constants.borderWidth, Constants.fullHeight);
@@ -313,11 +312,24 @@ function handleRestart() {
     }
 }
 
+function createGameObjects() {
+    ball = new Ball(0, 0, Constants.ballRadius, Constants.initialBallDirection);
+
+    bat = new Bat(
+        Constants.gameAreaWidth / 2 - Constants.batWidth / 2,
+        Constants.gameAreaHeight - 2 * Constants.batHeight,
+        Constants.batWidth,
+        Constants.batHeight,
+        Colors.bat);
+
+    bricks = createBricks();
+}
+
 function startNewGame() {
     score = 0;
     lives = 5;
     level = 1;
-    
+
     prepareNextBall();
 }
 
@@ -374,13 +386,14 @@ function resetBricks() {
 
 function getRowColor(rowNumber) {
     switch (rowNumber) {
-        case 0: return "#D25444";
-        case 1: return "#D07137";
-        case 2: return "#BA7B2C";
-        case 3: return "#A49A26";
-        case 4: return "#439348";
-        case 5: return "#3F4FCE";
-        default: return "#D25444";
+        case 0: return Colors.brick1;
+        case 1: return Colors.brick2;
+        case 2: return Colors.brick3;
+        case 3: return Colors.brick4;
+        case 4: return Colors.brick5;
+        case 5: return Colors.brick6;
+
+        default: return Colors.brick1;
     }
 }
 

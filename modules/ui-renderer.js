@@ -1,4 +1,4 @@
-import Point2d from "./point2d.js";
+import * as Colors from "./colors.js";
 
 export default class UiRenderer {
     #ctx;
@@ -17,7 +17,7 @@ export default class UiRenderer {
         let x = this.#width / 2;
         let y = 30;
         
-        this.#ctx.fillStyle = "#8E8E8E";
+        this.#ctx.fillStyle = Colors.statsText;
         this.#ctx.fillText("SCORE: " + score + "   LIVES: " + lives, x, y);
     }
 
@@ -44,9 +44,9 @@ export default class UiRenderer {
 
     createGradient(yCenter, verticalOffset) {
         let g = this.#ctx.createLinearGradient(0, yCenter - verticalOffset, 0, yCenter + verticalOffset);
-        g.addColorStop("0", "#D25444");
-        g.addColorStop("0.2", "#D07137");
-        g.addColorStop("1.0", "#3F4FCE");
+        g.addColorStop("0", Colors.messageGradient1);
+        g.addColorStop("0.2", Colors.messageGradient2);
+        g.addColorStop("1.0", Colors.messageGradient3);
 
         return g;
     }

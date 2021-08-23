@@ -1,5 +1,3 @@
-// uses radians
-
 export default class Vector2d {
     x = 0;
     y = 0;

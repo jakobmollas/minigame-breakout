@@ -21,4 +21,4 @@ export const speed4 = 360;
 export const ballRadius = 5;
 export const initialBallDirection = new Vector2d(0.7, -1);
 export const batHeight = 0.5 * brickHeight;
-export const batInitialWidth = 3 * brickWidth;
+export const batWidth = 3 * brickWidth;
