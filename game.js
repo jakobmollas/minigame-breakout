@@ -33,17 +33,11 @@ window.onload = function () {
 }
 
 function setupCanvasContext() {
-    let canvas = document.getElementById("game-canvas");
+    const canvas = document.getElementById("game-canvas");
     canvas.width = Constants.fullWidth;
     canvas.height = Constants.fullHeight;
 
-    let dpr = 1 / (window.devicePixelRatio || 1);
-    canvas.width = canvas.width * dpr;
-    canvas.height = canvas.height * dpr;
-
-    let ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-
+    const ctx = canvas.getContext('2d');
     return ctx;
 }
 
